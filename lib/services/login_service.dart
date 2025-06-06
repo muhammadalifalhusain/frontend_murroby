@@ -21,12 +21,31 @@ class LoginService {
     if (response.statusCode == 201) {
       return {
         'success': true,
-        'data': data,
+        'data': data['data'], // pastikan response API login menyertakan ID user di sini
       };
     } else {
       return {
         'success': false,
         'message': data['errors']?['Verifikasi']?[0] ?? 'Login gagal',
+      };
+    }
+  }
+
+  static Future<Map<String, dynamic>> fetchDashboardData(int idUser) async {
+    final url = Uri.parse('$baseUrl/murroby/santri/$idUser');
+    final response = await http.get(url);
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return {
+        'success': true,
+        'data': data['data'],
+      };
+    } else {
+      return {
+        'success': false,
+        'message': data['message'] ?? 'Gagal mengambil data',
       };
     }
   }

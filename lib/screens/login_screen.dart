@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:murroby/screens/dashboard/main.dart';
 import 'dart:ui';
+import 'dashboard/dashboard_screen.dart';
 import '../services/login_service.dart';
 
 class LoginScreenMurroby extends StatefulWidget {
@@ -52,8 +54,7 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby>
     return Scaffold(
       body: Stack(
         children: [
-          // Background Image
-          SizedBox.expand(
+         SizedBox.expand(
             child: Image.asset(
               'assets/images/bg-login.jpg',
               fit: BoxFit.cover,
@@ -194,10 +195,17 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby>
                                               Navigator.pop(context);
 
                                               if (result['success']) {
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                  SnackBar(content: Text('Login berhasil!')),
+                                                final murrobyData = result['data']; // Ambil data lengkap user
+
+                                                Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) => MainScreen(
+                                                      userId: murrobyData['id'],
+                                                      murrobyData: murrobyData, // Kirim data lengkap ke dashboard
+                                                    ),
+                                                  ),
                                                 );
-                                                // TODO: Navigasi ke dashboard
                                               } else {
                                                 ScaffoldMessenger.of(context).showSnackBar(
                                                   SnackBar(content: Text(result['message'])),
