@@ -32,7 +32,7 @@ class LoginService {
   }
 
   static Future<Map<String, dynamic>> fetchDashboardData(int idUser) async {
-    final url = Uri.parse('$baseUrl/murroby/santri/$idUser');
+    final url = Uri.parse('$baseUrl/murroby/uang-saku/$idUser');
     final response = await http.get(url);
 
     final data = jsonDecode(response.body);

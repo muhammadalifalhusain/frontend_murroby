@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
+import 'saku_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final int userId;
@@ -23,7 +24,7 @@ class _MainScreenState extends State<MainScreen> {
     {
       'icon': Icons.account_balance_wallet,
       'label': 'Uang Saku',
-      'isAvailable': false, // Belum tersedia
+      'isAvailable': true, // Belum tersedia
     },
     {
       'icon': Icons.dashboard,
@@ -140,8 +141,8 @@ class _MainScreenState extends State<MainScreen> {
   Widget _getCurrentScreen() {
     switch (_selectedIndex) {
       case 0: // Uang Saku
-        return _buildComingSoonScreen('Uang Saku', Icons.account_balance_wallet);
-      case 1: // Dashboard
+        return UangSakuScreen(userId: widget.userId);
+      case 1: // Dashboari
         return DashboardMurrobyScreen(
           userId: widget.userId,
           murrobyData: widget.murrobyData,
