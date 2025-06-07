@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 
 import 'package:murroby/models/saku_model.dart';
 import 'package:murroby/services/saku_service.dart';
+import 'detailSaku.dart';
 
 class UangSakuScreen extends StatefulWidget {
   final int userId;
@@ -466,7 +467,15 @@ class _UangSakuScreenState extends State<UangSakuScreen>
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            // Handle santri detail tap
+            Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailSakuScreen(
+                noInduk: santri.noIndukSantri,
+                namaSantri: santri.namaSantri,
+              ),
+            ),
+          );
           },
           child: Padding(
             padding: const EdgeInsets.all(16),

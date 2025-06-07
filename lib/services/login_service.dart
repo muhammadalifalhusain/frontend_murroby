@@ -5,7 +5,7 @@ class LoginService {
   static const String baseUrl = 'https://api.ppatq-rf.id/api';
 
   static Future<Map<String, dynamic>> login(String email, String password) async {
-    final url = Uri.parse('$baseUrl/murroby/login');
+    final url = Uri.parse('$baseUrl/ustad/login');
 
     final response = await http.post(
       url,
