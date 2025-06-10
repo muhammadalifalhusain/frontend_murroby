@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:murroby/screens/dashboard/main.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 import 'dart:ui';
 import 'dashboard/dashboard_screen.dart';
 import '../services/login_service.dart';
@@ -54,21 +55,18 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby>
     return Scaffold(
       body: Stack(
         children: [
-         SizedBox.expand(
+          SizedBox.expand(
             child: Image.asset(
               'assets/images/bg-login.jpg',
               fit: BoxFit.cover,
             ),
           ),
-
-          // Overlay blur (optional aesthetic)
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
             child: Container(
               color: Colors.black.withOpacity(0.4),
             ),
           ),
-
           SafeArea(
             child: Column(
               children: [
@@ -195,14 +193,17 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby>
                                               Navigator.pop(context);
 
                                               if (result['success']) {
-                                                final murrobyData = result['data']; // Ambil data lengkap user
+                                                final murrobyData = result['data']; 
+
+                                                SharedPreferences prefs = await SharedPreferences.getInstance();
+                                                await prefs.setInt('userId', murrobyData['id']);
 
                                                 Navigator.pushReplacement(
                                                   context,
                                                   MaterialPageRoute(
                                                     builder: (context) => MainScreen(
                                                       userId: murrobyData['id'],
-                                                      murrobyData: murrobyData, // Kirim data lengkap ke dashboard
+                                                      murrobyData: murrobyData, 
                                                     ),
                                                   ),
                                                 );

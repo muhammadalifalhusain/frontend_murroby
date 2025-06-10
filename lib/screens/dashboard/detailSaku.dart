@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 
 
 import 'package:murroby/models/detailSaku_model.dart';
@@ -19,45 +21,421 @@ class DetailSakuScreen extends StatefulWidget {
   _DetailSakuScreenState createState() => _DetailSakuScreenState();
 }
 
-class _DetailSakuScreenState extends State<DetailSakuScreen> {
-  late Future<DetailSakuResponse> futureUangMasuk;
-  late Future<DetailSakuResponse> futureUangKeluar;
-  final NumberFormat currencyFormat = NumberFormat.currency(
-    locale: 'id_ID',
-    symbol: 'Rp ',
-    decimalDigits: 0,
-  );
+  class _DetailSakuScreenState extends State<DetailSakuScreen> with SingleTickerProviderStateMixin {
+    late Future<DetailSakuResponse> futureUangMasuk;
+    late Future<DetailSakuResponse> futureUangKeluar;
+    final NumberFormat currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
-  @override
-  void initState() {
-    super.initState();
-    futureUangMasuk = DetailSakuService.fetchUangMasuk(widget.noInduk);
-    futureUangKeluar = DetailSakuService.fetchUangKeluar(widget.noInduk);
+    late TabController _tabController; // Tambah ini
+
+    @override
+    void initState() {
+      super.initState();
+      _tabController = TabController(length: 2, vsync: this); // Inisialisasi controller
+      _refreshData();
+    }
+
+    @override
+    void dispose() {
+      _tabController.dispose(); // Penting: dispose controller
+      super.dispose();
+    }
+
+    void _refreshData() {
+      setState(() {
+        futureUangMasuk = DetailSakuService.fetchUangMasuk(widget.noInduk);
+        futureUangKeluar = DetailSakuService.fetchUangKeluar(widget.noInduk);
+      });
+    }
+
+  void _showAddUangKeluarDialog() async {
+    final formKey = GlobalKey<FormState>();
+    TextEditingController jumlahController = TextEditingController();
+    TextEditingController catatanController = TextEditingController();
+    TextEditingController tanggalController = TextEditingController();
+    DateTime selectedDate = DateTime.now();
+
+    tanggalController.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+    final prefs = await SharedPreferences.getInstance();
+    final idUser = prefs.getInt('userId');
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Tambah Uang Keluar'),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: jumlahController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Jumlah',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (val) =>
+                        val == null || val.isEmpty ? 'Masukkan jumlah' : null,
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: catatanController,
+                    decoration: const InputDecoration(
+                      labelText: 'Catatan',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (val) =>
+                        val == null || val.isEmpty ? 'Masukkan catatan' : null,
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: tanggalController,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Tanggal',
+                      border: OutlineInputBorder(),
+                      suffixIcon: Icon(Icons.calendar_today),
+                    ),
+                    onTap: () async {
+                      final DateTime? picked = await showDatePicker(
+                        context: context,
+                        initialDate: selectedDate,
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2101),
+                      );
+                      if (picked != null) {
+                        tanggalController.text =
+                            DateFormat('yyyy-MM-dd').format(picked);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  try {
+                    final response = await DetailSakuService.postUangKeluar(
+                      noInduk: widget.noInduk,
+                      idUser: idUser ?? 0,
+                      jumlah: int.parse(jumlahController.text),
+                      catatan: catatanController.text,
+                      tanggal: tanggalController.text,
+                      allKamar: false,
+                    );
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(response)),
+                    );
+                    Navigator.pop(context);
+                    _refreshData();
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(e.toString())),
+                    );
+                  }
+                }
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+  void _showAddUangMasukDialog() {
+    final formKey = GlobalKey<FormState>();
+    int? selectedDari;
+    TextEditingController jumlahController = TextEditingController();
+    TextEditingController tanggalController = TextEditingController();
+    DateTime selectedDate = DateTime.now();
+
+    // Set initial date
+    tanggalController.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: SingleChildScrollView(
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header
+                    const Text(
+                      'Tambah Uang Masuk',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Divider(height: 1),
+                    const SizedBox(height: 20),
+
+                    // Sumber Uang
+                    DropdownButtonFormField<int>(
+                      decoration: InputDecoration(
+                        labelText: 'Sumber Uang',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.blue),
+                        ),
+                        filled: true,
+                        fillColor: Colors.blue[50],
+                        prefixIcon: const Icon(Icons.source, color: Colors.teal),
+                      ),
+                      value: selectedDari,
+                      items: const [
+                        DropdownMenuItem(
+                          value: 1,
+                          child: Text('Uang Saku'),
+                        ),
+                        DropdownMenuItem(
+                          value: 2,
+                          child: Text('Kunjungan Walsan'),
+                        ),
+                        DropdownMenuItem(
+                          value: 3,
+                          child: Text('Sisa Bulan Kemarin'),
+                        ),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          selectedDari = value;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Pilih sumber uang';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Jumlah
+                    TextFormField(
+                      controller: jumlahController,
+                      decoration: InputDecoration(
+                        labelText: 'Jumlah',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.blue),
+                        ),
+                        filled: true,
+                        fillColor: Colors.blue[50],
+                        prefixIcon: const Icon(Icons.money, color: Colors.teal),
+                        prefixText: 'Rp ',
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Masukkan jumlah';
+                        }
+                        if (int.tryParse(value) == null) {
+                          return 'Masukkan angka yang valid';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Tanggal
+                    TextFormField(
+                      controller: tanggalController,
+                      decoration: InputDecoration(
+                        labelText: 'Tanggal',
+                        labelStyle: const TextStyle(color: Colors.black),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: Colors.blue),
+                        ),
+                        filled: true,
+                        fillColor: Colors.blue[50],
+                        prefixIcon: const Icon(Icons.calendar_today, color: Colors.teal),
+                      ),
+                      readOnly: true,
+                      onTap: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2101),
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: const ColorScheme.light(
+                                  primary: Colors.blue,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+                        if (picked != null && picked != selectedDate) {
+                          setState(() {
+                            selectedDate = picked;
+                            tanggalController.text =
+                                DateFormat('yyyy-MM-dd').format(picked);
+                          });
+                        }
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Pilih tanggal';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Action Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.red,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('BATAL'),
+                        ),
+                        const SizedBox(width: 10),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            elevation: 2,
+                          ),
+                          onPressed: () async {
+                            if (formKey.currentState!.validate()) {
+                              try {
+                                final response = await DetailSakuService.postUangMasuk(
+                                  noInduk: widget.noInduk,
+                                  dari: selectedDari!,
+                                  jumlah: int.parse(jumlahController.text),
+                                  tanggal: tanggalController.text,
+                                );
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(response),
+                                    backgroundColor: Colors.green,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                );
+
+                                _refreshData();
+                                Navigator.pop(context);
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(e.toString()),
+                                    backgroundColor: Colors.red,
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          child: const Text('SIMPAN'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.namaSantri),
-          bottom: const TabBar(
-            tabs: [
-              Tab(text: 'Uang Masuk'),
-              Tab(text: 'Uang Keluar'),
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          widget.namaSantri,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white),
         ),
-        body: TabBarView(
-          children: [
-            _buildUangMasukTab(),
-            _buildUangKeluarTab(),
+        centerTitle: true,
+        backgroundColor: Colors.teal,
+        bottom: TabBar(
+          controller: _tabController, // pakai tab controller
+          indicatorColor: Colors.black,
+          labelColor: Colors.white,
+          unselectedLabelColor: Color.fromARGB(179, 90, 79, 79),
+          tabs: const [
+            Tab(text: 'Uang Masuk'),
+            Tab(text: 'Uang Keluar'),
           ],
         ),
       ),
+      body: TabBarView(
+        controller: _tabController, // pakai tab controller
+        children: [
+          _buildUangMasukTab(),
+          _buildUangKeluarTab(),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          if (_tabController.index == 0) {
+            _showAddUangMasukDialog();
+          } else {
+            _showAddUangKeluarDialog();
+          }
+        },
+        child: const Icon(Icons.add),
+        tooltip: 'Tambah Data',
+      ),
     );
   }
+
 
   Widget _buildUangMasukTab() {
     return FutureBuilder<DetailSakuResponse>(
@@ -74,48 +452,53 @@ class _DetailSakuScreenState extends State<DetailSakuScreen> {
         final data = snapshot.data!;
         final uangMasukList = data.dataUangMasuk!;
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: uangMasukList.length,
-          itemBuilder: (context, index) {
-            final uangMasuk = uangMasukList[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          uangMasuk.uangAsal,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          currencyFormat.format(uangMasuk.jumlahMasuk),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Tanggal: ${_formatDate(uangMasuk.tanggalTransaksi)}',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-              ),
-            );
+        return RefreshIndicator(
+          onRefresh: () async {
+            _refreshData();
           },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: uangMasukList.length,
+            itemBuilder: (context, index) {
+              final uangMasuk = uangMasukList[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            uangMasuk.uangAsal,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            currencyFormat.format(uangMasuk.jumlahMasuk),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Tanggal: ${_formatDate(uangMasuk.tanggalTransaksi)}',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -136,53 +519,58 @@ class _DetailSakuScreenState extends State<DetailSakuScreen> {
         final data = snapshot.data!;
         final uangKeluarList = data.dataUangKeluar!;
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: uangKeluarList.length,
-          itemBuilder: (context, index) {
-            final uangKeluar = uangKeluarList[index];
-            return Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          uangKeluar.catatan,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          currencyFormat.format(uangKeluar.jumlahKeluar),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Tanggal: ${_formatDate(uangKeluar.tanggalTransaksi)}',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Oleh: ${uangKeluar.namaMurroby}',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-              ),
-            );
+        return RefreshIndicator(
+          onRefresh: () async {
+            _refreshData();
           },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: uangKeluarList.length,
+            itemBuilder: (context, index) {
+              final uangKeluar = uangKeluarList[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            uangKeluar.catatan,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            currencyFormat.format(uangKeluar.jumlahKeluar),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Tanggal: ${_formatDate(uangKeluar.tanggalTransaksi)}',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Oleh: ${uangKeluar.namaMurroby}',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
         );
       },
     );
