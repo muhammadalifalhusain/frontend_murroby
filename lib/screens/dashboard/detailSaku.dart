@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
+import 'package:shared_preferences/shared_preferences.dart'; 
 
 
 import 'package:murroby/models/detailSaku_model.dart';
@@ -31,13 +30,13 @@ class DetailSakuScreen extends StatefulWidget {
     @override
     void initState() {
       super.initState();
-      _tabController = TabController(length: 2, vsync: this); // Inisialisasi controller
+      _tabController = TabController(length: 2, vsync: this); 
       _refreshData();
     }
 
     @override
     void dispose() {
-      _tabController.dispose(); // Penting: dispose controller
+      _tabController.dispose(); 
       super.dispose();
     }
 
@@ -398,30 +397,63 @@ class DetailSakuScreen extends StatefulWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: const Color(0xFF7B9080),
+        elevation: 1,
+        toolbarHeight: 64,
+        centerTitle: true,
         title: Text(
           widget.namaSantri,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white),
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            color: Color(0xFFFFE7CD),
+          ),
         ),
-        centerTitle: true,
-        backgroundColor: Colors.teal,
-        bottom: TabBar(
-          controller: _tabController, // pakai tab controller
-          indicatorColor: Colors.black,
-          labelColor: Colors.white,
-          unselectedLabelColor: Color.fromARGB(179, 90, 79, 79),
-          tabs: const [
-            Tab(text: 'Uang Masuk'),
-            Tab(text: 'Uang Keluar'),
-          ],
-        ),
+        iconTheme: const IconThemeData(color: Color(0xFFFFE7CD)),
       ),
-      body: TabBarView(
-        controller: _tabController, // pakai tab controller
+
+      body: Column(
         children: [
-          _buildUangMasukTab(),
-          _buildUangKeluarTab(),
+          const SizedBox(height: 8), 
+          Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF7B9080), 
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: TabBar(
+                controller: _tabController,
+                indicator: BoxDecoration(
+                  color: Colors.black.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                indicatorSize: TabBarIndicatorSize.tab,
+                indicatorPadding: const EdgeInsets.all(4),
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white.withOpacity(0.7),
+                labelStyle: const TextStyle(fontWeight: FontWeight.bold),
+                tabs: const [
+                  Tab(text: 'Uang Masuk'),
+                  Tab(text: 'Uang Keluar'),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 5),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildUangMasukTab(),
+                _buildUangKeluarTab(),
+              ],
+            ),
+          ),
         ],
       ),
+
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (_tabController.index == 0) {
@@ -435,6 +467,7 @@ class DetailSakuScreen extends StatefulWidget {
       ),
     );
   }
+
 
 
   Widget _buildUangMasukTab() {
