@@ -22,8 +22,7 @@ class _UangSakuScreenState extends State<UangSakuScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  static const String fotoGaleriBaseUrl =
-      "https://manajemen.ppatq-rf.id/assets/img/upload/photo/";
+  static const String fotoGaleriBaseUrl ="https://manajemen.ppatq-rf.id/assets/img/upload/photo/";
 
   @override
   void initState() {
@@ -91,7 +90,7 @@ class _UangSakuScreenState extends State<UangSakuScreen>
               ? _buildEmptyState(message: 'Data murroby tidak ditemukan')
               : RefreshIndicator(
                   onRefresh: _refreshData,
-                  color: Colors.teal,
+                  color: Color(0xFF7B9080),
                   child: CustomScrollView(
                     slivers: [
                       _buildSliverAppBar(),
@@ -114,18 +113,15 @@ class _UangSakuScreenState extends State<UangSakuScreen>
                     ],
                   ),
                 ),
-    );
-  }
+              );
+            }
 
   Widget _buildLoadingState() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF00695C), Color(0xFF004D40)],
-        ),
+      return Container(
+        decoration: const BoxDecoration(
+        color: Color(0xFF7B9080),
       ),
+
       child: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -158,7 +154,7 @@ class _UangSakuScreenState extends State<UangSakuScreen>
       floating: false,
       pinned: true,
       elevation: 0,
-      backgroundColor: Colors.teal[600],
+      backgroundColor: const Color(0xFF7B9080),
       flexibleSpace: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           final double top = constraints.biggest.height;
@@ -179,22 +175,15 @@ class _UangSakuScreenState extends State<UangSakuScreen>
               child: const Text(
                 'Saku Santri',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Color(0xFFFFE7CD),
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
             background: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.teal[400]!,
-                    Colors.teal[700]!,
-                  ],
-                ),
+              decoration: const BoxDecoration(
+                color: Color(0xFF7B9080),
               ),
               child: SafeArea(
                 child: Padding(
@@ -250,6 +239,7 @@ class _UangSakuScreenState extends State<UangSakuScreen>
       ),
     );
   }
+
 
   Widget _buildStatsCards() {
     double totalSaldo = santriList.fold(

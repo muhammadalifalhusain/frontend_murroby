@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
 import 'saku_screen.dart';
+import 'kesehatan_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final int userId;
@@ -17,24 +18,23 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 1; // Default ke Dashboard (index 1)
+  int _selectedIndex = 1;
 
-  // Define menu items dengan status
   final List<Map<String, dynamic>> _menuItems = [
     {
       'icon': Icons.account_balance_wallet,
       'label': 'Uang Saku',
-      'isAvailable': true, // Belum tersedia
+      'isAvailable': true, 
     },
     {
       'icon': Icons.dashboard,
       'label': 'Dashboard',
-      'isAvailable': true, // Tersedia
+      'isAvailable': true, 
     },
     {
-      'icon': Icons.more_horiz,
-      'label': 'Lainnya',
-      'isAvailable': false, // Belum tersedia
+      'icon': Icons.local_hospital,
+      'label': 'Kesehatan',
+      'isAvailable': true, 
     },
   ];
 
@@ -147,121 +147,14 @@ class _MainScreenState extends State<MainScreen> {
           userId: widget.userId,
           murrobyData: widget.murrobyData,
         );
-      case 2: // Lainnya
-        return _buildComingSoonScreen('Menu Lainnya', Icons.more_horiz);
+      case 2: // Kesehatan
+        return KesehatanScreen();
       default:
         return DashboardMurrobyScreen(
           userId: widget.userId,
           murrobyData: widget.murrobyData,
         );
     }
-  }
-
-  Widget _buildComingSoonScreen(String title, IconData icon) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFB),
-      appBar: AppBar(
-        title: Text(title),
-        backgroundColor: Colors.teal[600],
-        foregroundColor: Colors.white,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.grey[300]!, width: 2),
-                ),
-                child: Icon(
-                  icon,
-                  size: 60,
-                  color: Colors.grey[400],
-                ),
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'Coming Soon',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Menu $title sedang dalam pengembangan',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.teal[50],
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.teal[200]!),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.construction,
-                      color: Colors.teal[600],
-                      size: 24,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Fitur ini akan segera hadir!',
-                      style: TextStyle(
-                        color: Colors.teal[700],
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _selectedIndex = 1; // Kembali ke Dashboard
-                  });
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal[600],
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 2,
-                ),
-                child: const Text(
-                  'Kembali ke Dashboard',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   @override

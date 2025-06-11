@@ -155,7 +155,7 @@ class _DashboardMurrobyScreenState extends State<DashboardMurrobyScreen>
       floating: false,
       pinned: true,
       elevation: 0,
-      backgroundColor: Colors.teal[600],
+      backgroundColor: Color(0xFF7B9080),
       flexibleSpace: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           // Calculate the collapse ratio
@@ -174,22 +174,15 @@ class _DashboardMurrobyScreenState extends State<DashboardMurrobyScreen>
               child: const Text(
                 'Dashboard',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Color(0xFFFFE7CD),
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                 ),
               ),
             ),
             background: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.teal[400]!,
-                    Colors.teal[700]!,
-                  ],
-                ),
+              decoration: const BoxDecoration(
+                color: Color(0xFF7B9080),
               ),
               child: SafeArea(
                 child: Padding(
@@ -490,19 +483,13 @@ class _DashboardMurrobyScreenState extends State<DashboardMurrobyScreen>
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    santri['noIndukSantri'].toString(),
+                    'NoInduk: ${santri['noIndukSantri']}',
                     style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF1F2937),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 16,
-                  color: Colors.grey[400],
                 ),
               ],
             ),

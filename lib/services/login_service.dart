@@ -32,6 +32,25 @@ class LoginService {
   }
 
   static Future<Map<String, dynamic>> fetchDashboardData(int idUser) async {
+    final url = Uri.parse('$baseUrl/murroby/santri/$idUser');
+    final response = await http.get(url);
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      return {
+        'success': true,
+        'data': data['data'],
+      };
+    } else {
+      return {
+        'success': false,
+        'message': data['message'] ?? 'Gagal mengambil data',
+      };
+    }
+  }
+
+  static Future<Map<String, dynamic>> fetchKeuanganData(int idUser) async {
     final url = Uri.parse('$baseUrl/murroby/uang-saku/$idUser');
     final response = await http.get(url);
 
