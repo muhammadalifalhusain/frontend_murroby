@@ -65,11 +65,12 @@ flutter:
   assets:
     - assets/images/logo.png
     - assets/images/bg-login.jpg
+    - assets/images/images.png
 
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.png"  # path ke gambar ikon utama
+  image_path: "assets/images/images.png"  # path ke gambar ikon utama
   adaptive_icon_background: "#FFFFFF"  # warna background untuk adaptive icon (Android 8+)
   
   # An image asset can refer to one or more resolution-specific "variants", see
