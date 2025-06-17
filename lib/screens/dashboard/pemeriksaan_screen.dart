@@ -1,190 +1,169 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 
 import '../../models/pemeriksaan_model.dart';
 import '../../services/pemeriksaan_service.dart';
+import 'detail_pemeriksaan_screen.dart';
 
 class PemeriksaanScreen extends StatefulWidget {
+  const PemeriksaanScreen({Key? key}) : super(key: key);
+
   @override
   _PemeriksaanScreenState createState() => _PemeriksaanScreenState();
 }
 
 class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
-  late Future<PemeriksaanResponse> futurePemeriksaan;
-  static const String fotoGaleriBaseUrl =
-      "https://manajemen.ppatq-rf.id/assets/img/upload/photo/";
+  late Future<PemeriksaanResponse> _pemeriksaanFuture;
+  final PemeriksaanService _service = PemeriksaanService();
 
   @override
   void initState() {
     super.initState();
-    futurePemeriksaan = PemeriksaanService().fetchPemeriksaan();
+    _pemeriksaanFuture = _service.getPemeriksaanData();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<PemeriksaanResponse>(
-      future: futurePemeriksaan,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
-        } else if (snapshot.hasError) {
-          return Scaffold(body: Center(child: Text("Terjadi kesalahan: ${snapshot.error}")));
-        } else if (!snapshot.hasData) {
-          return const Scaffold(body: Center(child: Text("Data tidak ditemukan.")));
-        }
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.teal,
+        elevation: 2,
+        toolbarHeight: 56,
+        automaticallyImplyLeading: true,
+        leading: IconButton(
+          icon: const Icon(Icons.chevron_left, size: 32,color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        centerTitle: false,
+        title: Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: Text(
+            'Pemeriksaan',
+            style: GoogleFonts.poppins(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+              fontSize: 20,
+            ),
+          ),
+        ),
+      ),
+      body: FutureBuilder<PemeriksaanResponse>(
+        future: _pemeriksaanFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else if (!snapshot.hasData) {
+            return const Center(child: Text('No data available'));
+          }
 
-        final murroby = snapshot.data!.data.dataUser;
-        final santriList = snapshot.data!.data.dataSantri;
+          final data = snapshot.data!;
+          final user = data.data.dataUser;
+          final santriList = data.data.dataSantri;
 
-        return Scaffold(
-          body: CustomScrollView(
-            slivers: [
-              _buildSliverAppBar(murroby),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: List.generate(santriList.length, (index) {
-                      final santri = santriList[index];
-                      return Card(
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: ExpansionTile(
-                          title: Text(
-                            santri.nama,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // User Info Card
+                Card(
+                  elevation: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundImage: NetworkImage(
+                            'https://manajemen.ppatq-rf.id/assets/img/upload/photo/${user.fotoMurroby}',
                           ),
-                          subtitle: Text("No Induk: ${santri.noInduk}"),
+                        ),
+                        const SizedBox(width: 16),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildInfoTile("Tanggal Pemeriksaan",
-                                santri.tanggalPemeriksaan != null
-                                    ? DateFormat('dd MMM yyyy').format(santri.tanggalPemeriksaan!)
-                                    : 'Belum diperiksa'),
-                            _buildInfoTile("Tinggi Badan", santri.tinggiBadan?.toString() ?? '-'),
-                            _buildInfoTile("Berat Badan", santri.beratBadan?.toString() ?? '-'),
-                            _buildInfoTile("Lingkar Pinggul", santri.lingkarPinggul?.toString() ?? '-'),
-                            _buildInfoTile("Lingkar Dada", santri.lingkarDada?.toString() ?? '-'),
-                            _buildInfoTile("Kondisi Gigi", santri.kondisiGigi ?? '-'),
+                            Text(
+                              user.namaMurroby,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Kamar: ${user.kodeKamar}',
+                              style: const TextStyle(fontSize: 16),
+                            ),
                           ],
                         ),
-                      );
-                    }),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildInfoTile(String title, String value) {
-    return ListTile(
-      title: Text(title),
-      subtitle: Text(value),
-    );
-  }
-
-  Widget _buildSliverAppBar(DataUser murroby) {
-    final photoUrl = murroby.fotoMurroby != null && murroby.fotoMurroby.isNotEmpty
-        ? fotoGaleriBaseUrl + murroby.fotoMurroby
-        : null;
-
-    return SliverAppBar(
-      expandedHeight: 180,
-      floating: false,
-      pinned: true,
-      elevation: 0,
-      backgroundColor: const Color(0xFF0D47A1), // Deep Blue
-      iconTheme: const IconThemeData(color: Color(0xFF81D4FA)), // Light Blue icons
-      flexibleSpace: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          final double top = constraints.biggest.height;
-          final double collapsedHeight = kToolbarHeight + MediaQuery.of(context).padding.top;
-          final double expandedHeight = 180 + MediaQuery.of(context).padding.top;
-          final double shrinkOffset = expandedHeight - top;
-          final double shrinkRatio = shrinkOffset / (expandedHeight - collapsedHeight);
-          final double titleOpacity = shrinkRatio.clamp(0.0, 1.0);
-
-          return FlexibleSpaceBar(
-            centerTitle: true,
-            title: AnimatedOpacity(
-              opacity: titleOpacity,
-              duration: const Duration(milliseconds: 100),
-              child: const Text(
-                'Kesehatan Santri',
-                style: TextStyle(
-                  color: Color(0xFF81D4FA), // Light Blue
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            background: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF0D47A1), // Deep Blue
-                    Color(0xFF1565C0), // Medium Blue
-                    Color(0xFF1976D2), // Lighter Blue
-                    Color(0xFF42A5F5), // Light Blue
-                  ],
-                ),
-              ),
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(17.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Hero(
-                        tag: 'murroby_photo',
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFF81D4FA), width: 3),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 15,
-                                offset: const Offset(0, 8),
-                              ),
-                              BoxShadow(
-                                color: const Color(0xFF81D4FA).withOpacity(0.4),
-                                blurRadius: 20,
-                                offset: const Offset(0, 0),
-                              ),
-                            ],
-                          ),
-                          child: CircleAvatar(
-                            radius: 38,
-                            backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-                            backgroundColor: Colors.white,
-                            child: photoUrl == null
-                                ? const Icon(Icons.person, size: 40, color: Color(0xFF0D47A1))
-                                : null,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        murroby.namaMurroby,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          letterSpacing: 0.3,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                const SizedBox(height: 20),
+                const Text(
+                  'Daftar Santri',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
+                const SizedBox(height: 10),
+                // Santri List
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: santriList.length,
+                  itemBuilder: (context, index) {
+                    final santri = santriList[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      child: ExpansionTile(
+                        title: Text(
+                          santri.nama,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text('No. Induk: ${santri.noInduk}'),
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              children: [
+                                _buildInfoRow('Tanggal Pemeriksaan',
+                                    santri.tanggalPemeriksaan ?? 'Belum diperiksa'),
+                                const Divider(),
+                                _buildInfoRow('Tinggi Badan',
+                                    santri.tinggiBadan?.toString() ?? '-'),
+                                const Divider(),
+                                _buildInfoRow('Berat Badan',
+                                    santri.beratBadan?.toString() ?? '-'),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => DetailPemeriksaanScreen(
+                                          noInduk: santri.noInduk,
+                                          namaSantri: santri.nama,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text('Lihat Detail Pemeriksaan'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
           );
         },
@@ -192,4 +171,16 @@ class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
     );
   }
 
+  Widget _buildInfoRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        Text(value),
+      ],
+    );
+  }
 }
