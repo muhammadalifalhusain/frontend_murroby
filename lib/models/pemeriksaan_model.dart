@@ -1,3 +1,36 @@
+class TambahPemeriksaan {
+  final String noInduk;
+  final String tanggalPemeriksaan;
+  final int tinggiBadan;
+  final int beratBadan;
+  final int lingkarPinggul;
+  final int lingkarDada;
+  final String kondisiGigi;
+
+  TambahPemeriksaan({
+    required this.noInduk,
+    required this.tanggalPemeriksaan,
+    required this.tinggiBadan,
+    required this.beratBadan,
+    required this.lingkarPinggul,
+    required this.lingkarDada,
+    required this.kondisiGigi,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'noInduk': noInduk,
+      'tanggalPemeriksaan': tanggalPemeriksaan,
+      'tinggiBadan': tinggiBadan,
+      'beratBadan': beratBadan,
+      'lingkarPinggul': lingkarPinggul,
+      'lingkarDada': lingkarDada,
+      'kondisiGigi': kondisiGigi,
+    };
+  }
+}
+
+
 class PemeriksaanResponse {
   final int status;
   final String message;

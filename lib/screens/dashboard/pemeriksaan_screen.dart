@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../models/kesehatan_model.dart';
-import '../../services/kesehatan_service.dart';
+import '../../models/pemeriksaan_model.dart';
+import '../../services/pemeriksaan_service.dart';
 
-class KesehatanScreen extends StatefulWidget {
+class PemeriksaanScreen extends StatefulWidget {
   @override
-  _KesehatanScreenState createState() => _KesehatanScreenState();
+  _PemeriksaanScreenState createState() => _PemeriksaanScreenState();
 }
 
-class _KesehatanScreenState extends State<KesehatanScreen> {
+class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
   late Future<PemeriksaanResponse> futurePemeriksaan;
   static const String fotoGaleriBaseUrl =
       "https://manajemen.ppatq-rf.id/assets/img/upload/photo/";
@@ -92,9 +92,11 @@ class _KesehatanScreenState extends State<KesehatanScreen> {
 
     return SliverAppBar(
       expandedHeight: 180,
+      floating: false,
       pinned: true,
-      backgroundColor: const Color(0xFF7B9080),
-      iconTheme: const IconThemeData(color: Color(0xFFFFE7CD)),
+      elevation: 0,
+      backgroundColor: const Color(0xFF0D47A1), // Deep Blue
+      iconTheme: const IconThemeData(color: Color(0xFF81D4FA)), // Light Blue icons
       flexibleSpace: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           final double top = constraints.biggest.height;
@@ -112,7 +114,7 @@ class _KesehatanScreenState extends State<KesehatanScreen> {
               child: const Text(
                 'Kesehatan Santri',
                 style: TextStyle(
-                  color: Color(0xFFFFE7CD),
+                  color: Color(0xFF81D4FA), // Light Blue
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                 ),
@@ -120,11 +122,20 @@ class _KesehatanScreenState extends State<KesehatanScreen> {
             ),
             background: Container(
               decoration: const BoxDecoration(
-                color: Color(0xFF7B9080),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF0D47A1), // Deep Blue
+                    Color(0xFF1565C0), // Medium Blue
+                    Color(0xFF1976D2), // Lighter Blue
+                    Color(0xFF42A5F5), // Light Blue
+                  ],
+                ),
               ),
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(17.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -135,12 +146,17 @@ class _KesehatanScreenState extends State<KesehatanScreen> {
                           height: 80,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
+                            border: Border.all(color: const Color(0xFF81D4FA), width: 3),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 15,
+                                offset: const Offset(0, 8),
+                              ),
+                              BoxShadow(
+                                color: const Color(0xFF81D4FA).withOpacity(0.4),
+                                blurRadius: 20,
+                                offset: const Offset(0, 0),
                               ),
                             ],
                           ),
@@ -149,7 +165,7 @@ class _KesehatanScreenState extends State<KesehatanScreen> {
                             backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
                             backgroundColor: Colors.white,
                             child: photoUrl == null
-                                ? Icon(Icons.person, size: 40, color: Colors.teal[600])
+                                ? const Icon(Icons.person, size: 40, color: Color(0xFF0D47A1))
                                 : null,
                           ),
                         ),
@@ -159,8 +175,9 @@ class _KesehatanScreenState extends State<KesehatanScreen> {
                         murroby.namaMurroby,
                         style: const TextStyle(
                           fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           color: Colors.white,
+                          letterSpacing: 0.3,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -174,4 +191,5 @@ class _KesehatanScreenState extends State<KesehatanScreen> {
       ),
     );
   }
+
 }

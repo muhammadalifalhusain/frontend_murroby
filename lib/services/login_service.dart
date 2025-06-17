@@ -18,10 +18,10 @@ class LoginService {
 
     final data = jsonDecode(response.body);
 
-    if (response.statusCode == 201) {
+    if (response.statusCode == 200) {
       return {
         'success': true,
-        'data': data['data'], // pastikan response API login menyertakan ID user di sini
+        'data': data['data'], 
       };
     } else {
       return {

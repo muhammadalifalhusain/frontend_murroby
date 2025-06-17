@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/menu_widget.dart';
 import '../../services/login_service.dart';
 
 class DashboardMurrobyScreen extends StatefulWidget {
@@ -106,6 +107,13 @@ class _DashboardMurrobyScreenState extends State<DashboardMurrobyScreen>
                           children: [
                             _buildStatsCards(size),
                             const SizedBox(height: 24),
+                            
+                            // TAMBAHKAN MENU IKON DI SINI
+                            Container(
+                              margin: const EdgeInsets.only(bottom: 20),
+                              child: MenuIkonWidget(),
+                            ),
+                            
                             _buildSantriSection(),
                           ],
                         ),
@@ -149,16 +157,16 @@ class _DashboardMurrobyScreenState extends State<DashboardMurrobyScreen>
     );
   }
 
+  // Option 4: Ocean Blue Gradient - Fresh & Professional
   Widget _buildSliverAppBar(String namaMurroby, String? photoUrl) {
     return SliverAppBar(
       expandedHeight: 180,
       floating: false,
       pinned: true,
       elevation: 0,
-      backgroundColor: Color(0xFF7B9080),
+      backgroundColor: const Color(0xFF0D47A1), // Deep Blue
       flexibleSpace: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-          // Calculate the collapse ratio
           final double top = constraints.biggest.height;
           final double collapsedHeight = kToolbarHeight + MediaQuery.of(context).padding.top;
           final double expandedHeight = 180 + MediaQuery.of(context).padding.top;
@@ -174,15 +182,25 @@ class _DashboardMurrobyScreenState extends State<DashboardMurrobyScreen>
               child: const Text(
                 'Dashboard',
                 style: TextStyle(
-                  color: Color(0xFFFFE7CD),
+                  color: Color(0xFF81D4FA), // Light Blue
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
+                  letterSpacing: 0.5,
                 ),
               ),
             ),
             background: Container(
               decoration: const BoxDecoration(
-                color: Color(0xFF7B9080),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF0D47A1), // Deep Blue
+                    Color(0xFF1565C0), // Medium Blue
+                    Color(0xFF1976D2), // Lighter Blue
+                    Color(0xFF42A5F5), // Light Blue
+                  ],
+                ),
               ),
               child: SafeArea(
                 child: Padding(
@@ -197,12 +215,17 @@ class _DashboardMurrobyScreenState extends State<DashboardMurrobyScreen>
                           height: 80,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
+                            border: Border.all(color: const Color(0xFF81D4FA), width: 3), // Light Blue border
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 15,
+                                offset: const Offset(0, 8),
+                              ),
+                              BoxShadow(
+                                color: const Color(0xFF81D4FA).withOpacity(0.4),
+                                blurRadius: 20,
+                                offset: const Offset(0, 0),
                               ),
                             ],
                           ),
@@ -211,7 +234,7 @@ class _DashboardMurrobyScreenState extends State<DashboardMurrobyScreen>
                             backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
                             backgroundColor: Colors.white,
                             child: photoUrl == null
-                                ? Icon(Icons.person, size: 40, color: Colors.teal[600])
+                                ? const Icon(Icons.person, size: 40, color: Color(0xFF0D47A1))
                                 : null,
                           ),
                         ),
@@ -221,8 +244,9 @@ class _DashboardMurrobyScreenState extends State<DashboardMurrobyScreen>
                         namaMurroby,
                         style: const TextStyle(
                           fontSize: 22,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                           color: Colors.white,
+                          letterSpacing: 0.3,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -236,6 +260,7 @@ class _DashboardMurrobyScreenState extends State<DashboardMurrobyScreen>
       ),
     );
   }
+
 
   Widget _buildStatsCards(Size size) {
     return Row(

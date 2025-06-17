@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
 import 'saku_screen.dart';
-import 'kesehatan_screen.dart';
+import 'pemeriksaan_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final int userId;
@@ -49,7 +49,7 @@ class _MainScreenState extends State<MainScreen> {
           murrobyData: widget.murrobyData,
         );
       case 2:
-        return KesehatanScreen();
+        return PemeriksaanScreen();
       default:
         return DashboardMurrobyScreen(
           userId: widget.userId,
