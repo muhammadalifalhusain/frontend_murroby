@@ -84,24 +84,29 @@ class _UangSakuScreenState extends State<UangSakuScreen>
     return Scaffold(
     backgroundColor: const Color.fromARGB(255, 230, 229, 229),
     appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Row(
-          children: [
-            const Icon(Icons.account_balance_wallet, color: Colors.black87),
-            const SizedBox(width: 6),
-            Text(
-              'Uang Saku',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+      backgroundColor: Colors.white,
+      elevation: 0,
+      automaticallyImplyLeading: false, // agar kita bisa pasang leading custom
+      titleSpacing: 0, // hilangkan default padding di kiri
+      title: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
+            onPressed: () => Navigator.of(context).pop(),
+            padding: const EdgeInsets.only(left: 8, right: 4), // minimal padding
+            constraints: const BoxConstraints(), // hilangkan padding default
+          ),
+          Text(
+            'Uang Saku',
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
             ),
-          ],
-        ),
-        automaticallyImplyLeading: false,
+          ),
+        ],
       ),
+    ),
     body: isLoading
       ? _buildLoadingState()
       : murroby == null

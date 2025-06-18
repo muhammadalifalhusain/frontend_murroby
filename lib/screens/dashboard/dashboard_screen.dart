@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/dashboard_service.dart';
 import '../../models/dashboard_model.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../widgets/menu_widget.dart';
 
 
 class DashboardScreen extends StatefulWidget {
@@ -103,6 +104,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           _buildMurrobyProfileCard(murroby),
           const SizedBox(height: 24),
           _buildSummaryCards(santriList),
+          const SizedBox(height: 24),
+          MenuIkonWidget(),
           const SizedBox(height: 24),
           _buildSantriList(santriList),
         ],

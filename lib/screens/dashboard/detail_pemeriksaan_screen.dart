@@ -447,18 +447,6 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
               fontSize: 14,
             ),
           ),
-          SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: () {
-              _showAddPemeriksaanDialog();
-            },
-            icon: Icon(Icons.add),
-            label: Text('Tambah Pemeriksaan Pertama'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.teal,
-              foregroundColor: Colors.white,
-            ),
-          ),
         ],
       ),
     );
@@ -611,22 +599,7 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
 
-  void _showAddPemeriksaanDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Tambah Pemeriksaan'),
-        content: Text('Fitur tambah pemeriksaan akan segera tersedia.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
+  
   void _showEditPemeriksaanDialog(dynamic pemeriksaan) {
     showDialog(
       context: context,

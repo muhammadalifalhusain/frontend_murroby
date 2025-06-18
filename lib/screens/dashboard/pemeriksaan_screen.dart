@@ -352,7 +352,7 @@ class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                        colors: [Color.fromARGB(255, 19, 19, 19), Color.fromARGB(255, 4, 4, 4)],
                       ),
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
