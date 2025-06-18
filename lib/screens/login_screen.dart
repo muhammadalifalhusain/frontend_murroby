@@ -196,7 +196,7 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby>
                                                 final murrobyData = result['data']; 
 
                                                 SharedPreferences prefs = await SharedPreferences.getInstance();
-                                                await prefs.setInt('userId', murrobyData['id']);
+                                                await prefs.setInt('idUser', murrobyData['id']);
 
                                                 Navigator.pushReplacement(
                                                   context,

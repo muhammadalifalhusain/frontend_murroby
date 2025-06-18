@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart'; 
 
-
+import 'package:google_fonts/google_fonts.dart';
 import 'package:murroby/models/detailSaku_model.dart';
 import 'package:murroby/services/detailSaku_service.dart';
 
@@ -396,22 +396,37 @@ class DetailSakuScreen extends StatefulWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 230, 229, 229), 
       appBar: AppBar(
-        backgroundColor: const Color(0xFF7B9080),
+        backgroundColor: Colors.white,
         elevation: 1,
         toolbarHeight: 64,
-        centerTitle: true,
-        title: Text(
-          widget.namaSantri,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 22,
-            color: Color(0xFFFFE7CD),
-          ),
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                widget.namaSantri,
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 20,
+                  color: Colors.black,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+              ),
+            ),
+          ],
         ),
-        iconTheme: const IconThemeData(color: Color(0xFFFFE7CD)),
       ),
-
       body: Column(
         children: [
           const SizedBox(height: 8), 

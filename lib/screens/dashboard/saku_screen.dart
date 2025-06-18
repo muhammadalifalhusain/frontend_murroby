@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:murroby/models/saku_model.dart';
 import 'package:murroby/services/saku_service.dart';
 import 'detailSaku.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class UangSakuScreen extends StatefulWidget {
   final int userId;
@@ -21,8 +22,6 @@ class _UangSakuScreenState extends State<UangSakuScreen>
   bool isLoading = true;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-
-  static const String fotoGaleriBaseUrl ="https://manajemen.ppatq-rf.id/assets/img/upload/photo/";
 
   @override
   void initState() {
@@ -83,38 +82,56 @@ class _UangSakuScreenState extends State<UangSakuScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFB),
-      body: isLoading
-          ? _buildLoadingState()
-          : murroby == null
-              ? _buildEmptyState(message: 'Data murroby tidak ditemukan')
-              : RefreshIndicator(
-                  onRefresh: _refreshData,
-                  color: Color(0xFF7B9080),
-                  child: CustomScrollView(
-                    slivers: [
-                      _buildSliverAppBar(),
-                      SliverToBoxAdapter(
-                        child: FadeTransition(
-                          opacity: _fadeAnimation,
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildStatsCards(),
-                                const SizedBox(height: 24),
-                                _buildSantriSection(),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+    backgroundColor: const Color.fromARGB(255, 230, 229, 229),
+    appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Row(
+          children: [
+            const Icon(Icons.account_balance_wallet, color: Colors.black87),
+            const SizedBox(width: 6),
+            Text(
+              'Uang Saku',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+        automaticallyImplyLeading: false,
+      ),
+    body: isLoading
+      ? _buildLoadingState()
+      : murroby == null
+      ? _buildEmptyState(message: 'Data murroby tidak ditemukan')
+      : RefreshIndicator(
+          onRefresh: _refreshData,
+          color: Color(0xFF7B9080),
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildStatsCards(),
+                        const SizedBox(height: 24),
+                        _buildSantriSection(),
+                      ],
+                    ),
                   ),
                 ),
-              );
-            }
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
   Widget _buildLoadingState() {
       return Container(
@@ -144,177 +161,33 @@ class _UangSakuScreenState extends State<UangSakuScreen>
     );
   }
 
-  Widget _buildSliverAppBar() {
-    final photoUrl = murroby!.foto != null && murroby!.foto != ''
-        ? fotoGaleriBaseUrl + murroby!.foto
-        : null;
-
-    return SliverAppBar(
-      expandedHeight: 180,
-      floating: false,
-      pinned: true,
-      elevation: 0,
-      backgroundColor: const Color(0xFF0D47A1), // Fallback background
-      iconTheme: const IconThemeData(color: Color(0xFF81D4FA)),
-      flexibleSpace: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          final double top = constraints.biggest.height;
-          final double collapsedHeight =
-              kToolbarHeight + MediaQuery.of(context).padding.top;
-          final double expandedHeight =
-              180 + MediaQuery.of(context).padding.top;
-          final double shrinkOffset = expandedHeight - top;
-          final double shrinkRatio =
-              shrinkOffset / (expandedHeight - collapsedHeight);
-          final double titleOpacity = shrinkRatio.clamp(0.0, 1.0);
-
-          return FlexibleSpaceBar(
-            centerTitle: true,
-            title: AnimatedOpacity(
-              opacity: titleOpacity,
-              duration: const Duration(milliseconds: 100),
-              child: const Text(
-                'Saku Santri',
-                style: TextStyle(
-                  color: Color(0xFF81D4FA),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            background: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF0D47A1),
-                    Color(0xFF1565C0),
-                    Color(0xFF1976D2),
-                    Color(0xFF42A5F5),
-                  ],
-                ),
-              ),
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(17.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Hero(
-                        tag: 'murroby_photo',
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                color: const Color(0xFF81D4FA), width: 3),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 15,
-                                offset: const Offset(0, 8),
-                              ),
-                              BoxShadow(
-                                color: const Color(0xFF81D4FA).withOpacity(0.4),
-                                blurRadius: 20,
-                                offset: const Offset(0, 0),
-                              ),
-                            ],
-                          ),
-                          child: CircleAvatar(
-                            radius: 38,
-                            backgroundImage:
-                                photoUrl != null ? NetworkImage(photoUrl) : null,
-                            backgroundColor: Colors.white,
-                            child: photoUrl == null
-                                ? const Icon(Icons.person,
-                                    size: 40, color: Color(0xFF0D47A1))
-                                : null,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        murroby!.nama,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          letterSpacing: 0.3,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-
-
   Widget _buildStatsCards() {
     double totalSaldo = santriList.fold(
       0.0, (double sum, santri) => sum + (santri.jumlahSaldo ?? 0));
     
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            title: 'Total Santri',
-            value: santriList.length.toString(),
-            icon: Icons.people,
-            color: Colors.blue,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(Icons.account_balance_wallet, 
-                    color: Colors.green, size: 24),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  currencyFormat.format(totalSaldo),
-                  style: const TextStyle( 
-                    fontSize: 19,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-              ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildStatCard(
+              title: 'Total Santri',
+              value: santriList.length.toString(),
+              icon: Icons.people_rounded,
+              color: Color(0xFF3B82F6), // Blue 500
             ),
           ),
-        ),
-      ],
+          SizedBox(width: 12),
+          Expanded(
+            child: _buildStatCard(
+              title: 'Total Saldo',
+              value: currencyFormat.format(totalSaldo),
+              icon: Icons.account_balance_wallet_rounded,
+              color: Color(0xFF10B981), // Emerald 500
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -324,50 +197,66 @@ class _UangSakuScreenState extends State<UangSakuScreen>
     required IconData icon,
     required Color color,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: 150, // Memberikan tinggi minimum yang konsisten
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+      child: Container(
+        margin: EdgeInsets.all(4),
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: Offset(0, 2),
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon, color: color, size: 22),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
+            SizedBox(height: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    value,
+                    style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF111827), // Gray 900
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF6B7280), // Gray 500
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

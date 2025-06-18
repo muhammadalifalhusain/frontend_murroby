@@ -18,7 +18,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 1;
+  int _selectedIndex = 1; 
 
   final List<BottomNavigationBarItem> _navItems = [
     BottomNavigationBarItem(
@@ -44,17 +44,11 @@ class _MainScreenState extends State<MainScreen> {
       case 0:
         return UangSakuScreen(userId: widget.userId);
       case 1:
-        return DashboardMurrobyScreen(
-          userId: widget.userId,
-          murrobyData: widget.murrobyData,
-        );
+        return DashboardScreen(); // Panggil DashboardScreen di sini
       case 2:
         return PemeriksaanScreen();
       default:
-        return DashboardMurrobyScreen(
-          userId: widget.userId,
-          murrobyData: widget.murrobyData,
-        );
+        return DashboardScreen(); // Fallback ke DashboardScreen
     }
   }
 
@@ -66,7 +60,7 @@ class _MainScreenState extends State<MainScreen> {
         padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         child: Container(
           decoration: BoxDecoration(
-            color:  Colors.white,
+            color: Colors.white,
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(

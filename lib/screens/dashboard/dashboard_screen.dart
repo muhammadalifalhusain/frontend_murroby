@@ -1,525 +1,535 @@
 import 'package:flutter/material.dart';
-import '../../widgets/menu_widget.dart';
-import '../../services/login_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../services/dashboard_service.dart';
+import '../../models/dashboard_model.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class DashboardMurrobyScreen extends StatefulWidget {
-  final int userId;
-  final Map<String, dynamic> murrobyData;
 
-  const DashboardMurrobyScreen({
-    Key? key,
-    required this.userId,
-    required this.murrobyData,
-  }) : super(key: key);
-
+class DashboardScreen extends StatefulWidget {
   @override
-  _DashboardMurrobyScreenState createState() => _DashboardMurrobyScreenState();
+  _DashboardScreenState createState() => _DashboardScreenState();
 }
 
-class _DashboardMurrobyScreenState extends State<DashboardMurrobyScreen>
-    with SingleTickerProviderStateMixin {
-  Map<String, dynamic>? userData;
-  List<dynamic> santriList = [];
-  bool isLoading = true;
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-
-  static const String fotoGaleriBaseUrl =
-      "https://manajemen.ppatq-rf.id/assets/img/upload/photo/";
+class _DashboardScreenState extends State<DashboardScreen> {
+  late final ApiService _apiService;
+  late Future<UserDataResponse> _userDataFuture;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
-    fetchDashboard();
+    _apiService = ApiService();
+    _userDataFuture = _fetchUserData();
   }
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
-  }
-
-  Future<void> fetchDashboard() async {
-    final result = await LoginService.fetchDashboardData(widget.userId);
-
-    if (result['success']) {
-      setState(() {
-        userData = result['data']['dataUser'];
-        santriList = result['data']['listSantri'];
-        isLoading = false;
-      });
-      _animationController.forward();
-    } else {
-      setState(() {
-        isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Gagal mengambil data'),
-          backgroundColor: Colors.red[400],
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+  Future<UserDataResponse> _fetchUserData() async {
+    try {
+      // Tetap memuat SharedPreferences meskipun mungkin tidak digunakan langsung
+      await SharedPreferences.getInstance();
+      return await _apiService.fetchUserData();
+    } catch (e) {
+      throw Exception('Gagal memuat data: ${e.toString()}');
     }
   }
 
-  Future<void> _refreshData() async {
+  void _refreshData() {
     setState(() {
-      isLoading = true;
+      _userDataFuture = _fetchUserData();
     });
-    await fetchDashboard();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final photoUrl =
-        widget.murrobyData['photo'] != null && widget.murrobyData['photo'] != ''
-            ? fotoGaleriBaseUrl + widget.murrobyData['photo']
-            : null;
+   @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        backgroundColor: const Color.fromARGB(255, 230, 229, 229),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: Row(
+            children: [
+              const Icon(Icons.dashboard, color: Colors.black87),
+              const SizedBox(width: 6),
+              Text(
+                'Dashboard',
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          automaticallyImplyLeading: false,
+        ),
+        body: FutureBuilder<UserDataResponse>(
+          future: _userDataFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return SizedBox(
+                height: MediaQuery.of(context).size.height * 0.6,
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667EEA)),
+                  ),
+                ),
+              );
+            }
 
-    final namaMurroby = widget.murrobyData['nama'] ?? 'Nama tidak tersedia';
+            if (snapshot.hasError) {
+              return _buildErrorWidget(snapshot.error.toString());
+            }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFB),
-      body: isLoading
-          ? _buildLoadingState()
-          : RefreshIndicator(
-              onRefresh: _refreshData,
-              color: Colors.teal,
-              child: CustomScrollView(
-                slivers: [
-                  _buildSliverAppBar(namaMurroby, photoUrl),
-                  SliverToBoxAdapter(
-                    child: FadeTransition(
-                      opacity: _fadeAnimation,
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildStatsCards(size),
-                            const SizedBox(height: 24),
-                            
-                            // TAMBAHKAN MENU IKON DI SINI
-                            Container(
-                              margin: const EdgeInsets.only(bottom: 20),
-                              child: MenuIkonWidget(),
-                            ),
-                            
-                            _buildSantriSection(),
-                          ],
+            if (!snapshot.hasData || snapshot.data == null) {
+              return _buildEmptyDataWidget();
+            }
+
+            final userData = snapshot.data!;
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: _buildDashboardContent(userData),
+            );
+          },
+        ),
+      );
+    }
+
+  Widget _buildDashboardContent(UserDataResponse userData) {
+    final murroby = userData.data.dataUser;
+    final santriList = userData.data.listSantri;
+
+    return Padding(
+      padding: const EdgeInsets.all(4),
+      child: Column(
+        children: [
+          _buildMurrobyProfileCard(murroby),
+          const SizedBox(height: 24),
+          _buildSummaryCards(santriList),
+          const SizedBox(height: 24),
+          _buildSantriList(santriList),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMurrobyProfileCard(DataUser murroby) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF667EEA),
+            Color(0xFF764BA2),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF667EEA).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Card(
+        elevation: 0,
+        color: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 4,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
                         ),
+                      ],
+                    ),
+                    child: CircleAvatar(
+                      radius: 45,
+                      backgroundColor: Colors.white,
+                      child: CircleAvatar(
+                        radius: 41,
+                        backgroundImage: NetworkImage(
+                          'https://manajemen.ppatq-rf.id/assets/img/upload/photo/${murroby.fotoMurroby}',
+                        ),
+                        onBackgroundImageError: (_, __) => null,
+                        child: murroby.fotoMurroby.isEmpty
+                            ? const Icon(
+                                Icons.person,
+                                size: 45,
+                                color: Color(0xFF667EEA),
+                              )
+                            : null,
                       ),
                     ),
                   ),
+                  
                 ],
               ),
-            ),
-    );
-  }
-
-  Widget _buildLoadingState() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF00695C), Color(0xFF004D40)],
-        ),
-      ),
-      child: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Memuat data...',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // Option 4: Ocean Blue Gradient - Fresh & Professional
-  Widget _buildSliverAppBar(String namaMurroby, String? photoUrl) {
-    return SliverAppBar(
-      expandedHeight: 180,
-      floating: false,
-      pinned: true,
-      elevation: 0,
-      backgroundColor: const Color(0xFF0D47A1), // Deep Blue
-      flexibleSpace: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          final double top = constraints.biggest.height;
-          final double collapsedHeight = kToolbarHeight + MediaQuery.of(context).padding.top;
-          final double expandedHeight = 180 + MediaQuery.of(context).padding.top;
-          final double shrinkOffset = expandedHeight - top;
-          final double shrinkRatio = shrinkOffset / (expandedHeight - collapsedHeight);
-          final double titleOpacity = shrinkRatio.clamp(0.0, 1.0);
-          
-          return FlexibleSpaceBar(
-            centerTitle: true,
-            title: AnimatedOpacity(
-              opacity: titleOpacity,
-              duration: const Duration(milliseconds: 100),
-              child: const Text(
-                'Dashboard',
-                style: TextStyle(
-                  color: Color(0xFF81D4FA), // Light Blue
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-            background: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF0D47A1), // Deep Blue
-                    Color(0xFF1565C0), // Medium Blue
-                    Color(0xFF1976D2), // Lighter Blue
-                    Color(0xFF42A5F5), // Light Blue
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      murroby.namaMurroby,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildProfileInfoRow(
+                      Icons.home_rounded,
+                      murroby.alamatMurroby,
+                      Colors.white.withOpacity(0.9),
+                    ),
+                    _buildProfileInfoRow(
+                      Icons.meeting_room_rounded,
+                      'Kamar ${murroby.kodeKamar}',
+                      Colors.white.withOpacity(0.9),
+                    ),
                   ],
                 ),
               ),
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(17.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Hero(
-                        tag: 'murroby_photo',
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFF81D4FA), width: 3), // Light Blue border
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 15,
-                                offset: const Offset(0, 8),
-                              ),
-                              BoxShadow(
-                                color: const Color(0xFF81D4FA).withOpacity(0.4),
-                                blurRadius: 20,
-                                offset: const Offset(0, 0),
-                              ),
-                            ],
-                          ),
-                          child: CircleAvatar(
-                            radius: 38,
-                            backgroundImage: photoUrl != null ? NetworkImage(photoUrl) : null,
-                            backgroundColor: Colors.white,
-                            child: photoUrl == null
-                                ? const Icon(Icons.person, size: 40, color: Color(0xFF0D47A1))
-                                : null,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        namaMurroby,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          letterSpacing: 0.3,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          );
-        },
+            ],
+          ),
+        ),
       ),
     );
   }
 
+  Widget _buildProfileInfoRow(IconData icon, String text, Color color) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(icon, size: 16, color: Colors.white),
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: color,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-  Widget _buildStatsCards(Size size) {
+  Widget _buildSummaryCards(List<Santri> santriList) {
+  final calmColors = [
+      const Color.fromARGB(255, 78, 78, 139), 
+      const Color(0xFF78909C), 
+    ];
+
     return Row(
       children: [
-        Expanded(
-          child: _buildStatCard(
-            title: 'Total Santri',
-            value: santriList.length.toString(),
-            icon: Icons.people,
-            color: Colors.blue,
-          ),
+        _buildSummaryCard(
+          icon: Icons.people_rounded,
+          value: santriList.length.toString(),
+          label: 'Total Santri',
+          colors: calmColors,
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildStatCard(
-            title: 'Kode Kamar',
-            value: userData?['kodeKamar'] ?? '-',
-            icon: Icons.home,
-            color: Colors.orange,
-          ),
+        const SizedBox(width: 8),
+        _buildSummaryCard(
+          icon: Icons.school_rounded,
+          value: santriList.isNotEmpty ? santriList.first.kelasSantri : '-',
+          label: 'Kelas',
+          colors: calmColors,
         ),
       ],
     );
   }
 
-  Widget _buildStatCard({
-    required String title,
-    required String value,
+  Widget _buildSummaryCard({
     required IconData icon,
-    required Color color,
+    required String value,
+    required String label,
+    required List<Color> colors,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+    return Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: colors,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSantriSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              'Santri Binaan',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
-              ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: colors[0].withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        if (santriList.isEmpty)
-          _buildEmptyState()
-        else
-          _buildSantriList(),
-      ],
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(40),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+        child: Card(
+          elevation: 0,
+          color: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.school_outlined,
-            size: 64,
-            color: Colors.grey[400],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Belum ada santri',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Santri binaan akan muncul di sini',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[500],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSantriList() {
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: santriList.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final santri = santriList[index];
-        return _buildSantriCard(santri, index);
-      },
-    );
-  }
-
-  Widget _buildSantriCard(Map<String, dynamic> santri, int index) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            // Handle santri detail tap
-          },
           child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
+            padding: const EdgeInsets.all(10),
+            child: Column(
               children: [
                 Container(
-                  width: 50,
-                  height: 50,
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.teal[50],
-                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
                   ),
-                  child: Center(
-                    child: Text(
-                      '${index + 1}',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.teal[700],
-                      ),
-                    ),
+                  child: Icon(icon, color: Colors.white, size: 18),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        santri['namaSantri'] ?? 'Nama tidak tersedia',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1F2937),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.class_,
-                            size: 16,
-                            color: Colors.grey[500],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Kelas ${santri['kelasSantri'] ?? '-'}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'NoInduk: ${santri['noIndukSantri']}',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF1F2937),
-                    ),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSantriList(List<Santri> santriList) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [    
+        ...santriList.map((santri) => _buildSantriCard(santri)).toList(),
+      ],
+    );
+  }
+
+  Widget _buildSantriCard(Santri santri) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    santri.namaSantri,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2D3748),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    'NIS : ${santri.noIndukSantri}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildSantriInfoRow(Icons.school_rounded, 'Kelas ${santri.kelasSantri}'),
+            _buildSantriInfoRow(Icons.phone_rounded, santri.noHpSantri),
+            _buildSantriInfoRow(Icons.location_on_rounded, santri.alamatLengkap),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSantriInfoRow(IconData icon, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF667EEA).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 16, color: const Color(0xFF667EEA)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: Color(0xFF4A5568),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget(String error) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.error_outline_rounded, size: 48, color: Colors.red),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Terjadi Kesalahan',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2D3748),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              error,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Color(0xFF4A5568)),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ElevatedButton(
+                onPressed: _refreshData,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Coba Lagi',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyDataWidget() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF667EEA).withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.info_outline_rounded,
+              size: 48,
+              color: Color(0xFF667EEA),
+            ),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Tidak ada data tersedia',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2D3748),
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Silahkan refresh atau cek koneksi internet Anda',
+            style: TextStyle(color: Color(0xFF4A5568)),
+          ),
+        ],
       ),
     );
   }
