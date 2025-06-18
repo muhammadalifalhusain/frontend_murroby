@@ -58,7 +58,7 @@ class DataUser {
     return DataUser(
       idPegawai: json['idPegawai'] ?? 0,
       namaMurroby: json['namaMurroby'] ?? '',
-      fotoMurroby: json['fotoMurroby'] ?? '', // ← tambahkan default di sini
+      fotoMurroby: json['fotoMurroby'] ?? '', 
       alamatMurroby: json['alamatMurroby'] ?? '',
       kodeKamar: json['kodeKamar'] ?? '',
     );
@@ -71,6 +71,7 @@ class Santri {
   final String namaSantri;
   final String kelasSantri;
   final String noHpSantri;
+  final String fotoSantri;
   final String alamatLengkap;
 
   Santri({
@@ -78,6 +79,7 @@ class Santri {
     required this.namaSantri,
     required this.kelasSantri,
     required this.noHpSantri,
+    required this.fotoSantri,
     required this.alamatLengkap,
   });
 
@@ -86,7 +88,8 @@ class Santri {
       noIndukSantri: json['noIndukSantri'] ?? 0,
       namaSantri: json['namaSantri'] ?? '',
       kelasSantri: json['kelasSantri'] ?? '',
-      noHpSantri: json['noHpSantri'] ?? '', // ← FIX DI SINI
+      noHpSantri: json['noHpSantri'] ?? '',
+      fotoSantri: json['fotoSantri'] ?? '',
       alamatLengkap: json['alamatLengkap'] ?? '',
     );
   }

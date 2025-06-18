@@ -86,15 +86,15 @@ class _UangSakuScreenState extends State<UangSakuScreen>
     appBar: AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
-      automaticallyImplyLeading: false, // agar kita bisa pasang leading custom
-      titleSpacing: 0, // hilangkan default padding di kiri
+      automaticallyImplyLeading: false, 
+      titleSpacing: 0, 
       title: Row(
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
             onPressed: () => Navigator.of(context).pop(),
-            padding: const EdgeInsets.only(left: 8, right: 4), // minimal padding
-            constraints: const BoxConstraints(), // hilangkan padding default
+            padding: const EdgeInsets.only(left: 8, right: 4), 
+            constraints: const BoxConstraints(), 
           ),
           Text(
             'Uang Saku',

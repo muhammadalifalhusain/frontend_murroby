@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../screens/dashboard/perilaku_screen.dart';
 import '../screens/dashboard/saku_screen.dart';
 
 class MenuIkonWidget extends StatelessWidget {
@@ -17,18 +19,17 @@ class MenuIkonWidget extends StatelessWidget {
             children: [
               // Section Header
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.only(left: 4, bottom: 4),
                 child: Text(
                   'Menu Cepat',
                   style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
                 ),
               ),
-
-              // Menu Grid
+              const SizedBox(height: 5),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: LayoutBuilder(
@@ -72,10 +73,15 @@ class MenuIkonWidget extends StatelessWidget {
                         ),
                         _buildEnhancedMenuIkon(
                           Icons.rule_rounded,
-                          'Kedisiplinan',
+                          'Perilaku',
                           'Catatan perilaku',
                           const Color(0xFFFF5722),
-                          () => _navigateToKedisiplinan(context),
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const PerilakuScreen()),
+                            );
+                          },
                         ),
                         _buildEnhancedMenuIkon(
                           Icons.assignment_rounded,
