@@ -25,26 +25,31 @@ class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color.fromARGB(255, 230, 229, 229),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Row(
-          children: [
-            const Icon(Icons.local_hospital, color: Colors.black87),
-            const SizedBox(width: 6),
-            Text(
-              'Kesehatan',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+      backgroundColor: Colors.white,
+      elevation: 0,
+      automaticallyImplyLeading: false, 
+      titleSpacing: 0, 
+      title: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
+            onPressed: () => Navigator.of(context).pop(),
+            padding: const EdgeInsets.only(left: 8, right: 4), 
+            constraints: const BoxConstraints(), 
+          ),
+          Text(
+            'Pemeriksaan',
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
             ),
-          ],
-        ),
-        automaticallyImplyLeading: false,
+          ),
+        ],
       ),
+    ),
       body: FutureBuilder<PemeriksaanResponse>(
         future: _pemeriksaanFuture,
         builder: (context, snapshot) {

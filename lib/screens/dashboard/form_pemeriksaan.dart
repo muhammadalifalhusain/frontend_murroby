@@ -151,27 +151,29 @@ class _PemeriksaanFormScreenState extends State<PemeriksaanFormScreen>
   @override
     Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: const Color.fromARGB(255, 230, 229, 229),
       appBar: AppBar(
-        backgroundColor: Colors.teal,
-        elevation: 2,
-        toolbarHeight: 56,
-        automaticallyImplyLeading: true,
-        leading: IconButton(
-          icon: const Icon(Icons.chevron_left, size: 32, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        centerTitle: false,
-        title: Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: Text(
-            'Tambah Data',
-            style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 20,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false, 
+        titleSpacing: 0, 
+        title: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
+              onPressed: () => Navigator.of(context).pop(),
+              padding: const EdgeInsets.only(left: 8, right: 4), 
+              constraints: const BoxConstraints(), 
             ),
-          ),
+            Text(
+              'Tambah Data',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ],
         ),
       ),
       body: FadeTransition(

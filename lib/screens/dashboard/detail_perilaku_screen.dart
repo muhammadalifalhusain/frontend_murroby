@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'form_perilaku.dart';
+import 'form_perilaku_screen.dart';
 import '../../models/perilaku_model.dart';
 import '../../services/perilaku_service.dart';
 
@@ -47,7 +47,7 @@ class _DetailPerilakuScreenState extends State<DetailPerilakuScreen> {
             children: [
               IconButton(
                 icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () => Navigator.of(context).pop(true),
                 padding: const EdgeInsets.only(left: 8, right: 4),
                 constraints: const BoxConstraints(),
               ),
@@ -210,8 +210,8 @@ class _DetailPerilakuScreenState extends State<DetailPerilakuScreen> {
                   child: FloatingActionButton(
                     backgroundColor: const Color(0xFF667EEA),
                     child: const Icon(Icons.add, color: Colors.white),
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => FormPerilakuScreen(
@@ -220,6 +220,12 @@ class _DetailPerilakuScreenState extends State<DetailPerilakuScreen> {
                           ),
                         ),
                       );
+
+                      if (result == true) {
+                        setState(() {
+                          _futureDetail = PerilakuService().fetchDetailPerilaku(widget.noInduk);
+                        });
+                      }
                     },
                   ),
                 ),

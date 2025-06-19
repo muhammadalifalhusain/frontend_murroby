@@ -44,11 +44,11 @@ class _MainScreenState extends State<MainScreen> {
       case 0:
         return UangSakuScreen(userId: widget.userId);
       case 1:
-        return DashboardScreen(); // Panggil DashboardScreen di sini
+        return DashboardScreen(); 
       case 2:
         return PemeriksaanScreen();
       default:
-        return DashboardScreen(); // Fallback ke DashboardScreen
+        return DashboardScreen(); 
     }
   }
 

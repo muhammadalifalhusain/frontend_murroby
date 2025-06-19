@@ -33,29 +33,31 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color.fromARGB(255, 230, 229, 229),
       appBar: AppBar(
-        backgroundColor: Colors.teal,
-        elevation: 2,
-        toolbarHeight: 56,
-        automaticallyImplyLeading: true,
-        leading: IconButton(
-          icon: const Icon(Icons.chevron_left, size: 32, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        centerTitle: false,
-        title: Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: Text(
-            'Detail',
+      backgroundColor: Colors.white,
+      elevation: 0,
+      automaticallyImplyLeading: false, 
+      titleSpacing: 0, 
+      title: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
+            onPressed: () => Navigator.of(context).pop(),
+            padding: const EdgeInsets.only(left: 8, right: 4), 
+            constraints: const BoxConstraints(), 
+          ),
+          Text(
+            'Detail Pemeriksaan',
             style: GoogleFonts.poppins(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
               fontSize: 20,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
             ),
           ),
-        ),
+        ],
       ),
+    ),
       body: FutureBuilder<PemeriksaanDetailResponse>(
         future: _detailFuture,
         builder: (context, snapshot) {
@@ -78,82 +80,76 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
                   // Header Santri
                   SliverToBoxAdapter(
                     child: Container(
+                      width: double.infinity,
                       margin: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.teal.shade400, Colors.teal.shade600],
+                        gradient: const LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
+                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
                         ),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.teal.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: Offset(0, 4),
+                            color: const Color(0xFF6366F1).withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
                           ),
                         ],
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.person,
-                                size: 32,
-                                color: Colors.white,
-                              ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    santri.nama,
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
+                            child: const Icon(
+                              Icons.person_rounded,
+                              size: 28,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  santri.nama,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 2,
+                                ),
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    'No. Induk: ${santri.noInduk}',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
                                       color: Colors.white,
                                     ),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 2,
                                   ),
-                                  const SizedBox(height: 4),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.2),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      'No. Induk: ${santri.noInduk}',
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-
-                  // Judul Riwayat
                   SliverToBoxAdapter(
                     child: Container(
                       margin: const EdgeInsets.fromLTRB(16, 24, 16, 12),
@@ -177,8 +173,6 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
                       ),
                     ),
                   ),
-
-                  // List Pemeriksaan
                   pemeriksaanList.isEmpty
                       ? SliverToBoxAdapter(child: _buildNoPemeriksaanState())
                       : SliverList(
@@ -207,16 +201,13 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
                             childCount: pemeriksaanList.length,
                           ),
                         ),
-
                   const SliverToBoxAdapter(child: SizedBox(height: 100)),
                 ],
               ),
-
-              // Floating Button dalam Stack
               Positioned(
                 bottom: 16,
                 right: 16,
-                child: FloatingActionButton.extended(
+                child: FloatingActionButton(
                   onPressed: () async {
                     final result = await Navigator.push(
                       context,
@@ -234,12 +225,12 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
                       });
                     }
                   },
-                  backgroundColor: Colors.teal,
+                  backgroundColor: const Color(0xFF6366F1),
                   foregroundColor: Colors.white,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Tambah Pemeriksaan'),
+                  child: const Icon(Icons.add),
                 ),
               ),
+
             ],
           );
         },

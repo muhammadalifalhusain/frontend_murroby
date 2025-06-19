@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'detail_perilaku_screen.dart';
-import '../../models/perilaku_model.dart';
-import '../../services/perilaku_service.dart';
+import 'detail_kelengkapan_screen.dart';
+import '../../models/kelengkapan_model.dart';
+import '../../services/kelengkapan_service.dart';
 
-class PerilakuScreen extends StatefulWidget {
-  const PerilakuScreen({super.key});
+class KelengkapanScreen extends StatefulWidget {
+  const KelengkapanScreen({super.key});
 
   @override
-  State<PerilakuScreen> createState() => _PerilakuScreenState();
+  State<KelengkapanScreen> createState() => _KelengkapanScreenState();
 }
 
-class _PerilakuScreenState extends State<PerilakuScreen> {
-  late Future<PerilakuResponse> _futurePerilaku;
-  final PerilakuService _service = PerilakuService();
+class _KelengkapanScreenState extends State<KelengkapanScreen> {
+  late Future<KelengkapanResponse> _futureKelengkapan;
+  final KelengkapanService _service = KelengkapanService();
 
   Color getBackgroundColor(String value) {
   switch (value.toLowerCase()) {
-    case 'baik':
+    case 'lengkap & baik':
       return Colors.green.shade400;
-    case 'cukup':
+    case 'lengkap & kurang baik':
       return Colors.orange.shade400;
-    case 'kurang baik':
+    case 'tidak lengkap':
       return const Color.fromARGB(255, 216, 46, 33);
     default:
       return Colors.grey.shade300;
@@ -32,7 +32,7 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
   @override
   void initState() {
     super.initState();
-    _futurePerilaku = _service.fetchPerilakuData();
+    _futureKelengkapan = _service.fetchKelengkapanData();
   }
 
   @override
@@ -53,7 +53,7 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
               constraints: const BoxConstraints(), 
             ),
             Text(
-              'Perilaku',
+              'Kelengkapan',
               style: GoogleFonts.poppins(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -63,8 +63,8 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
           ],
         ),
       ),
-      body: FutureBuilder<PerilakuResponse>(
-        future: _futurePerilaku,
+      body: FutureBuilder<KelengkapanResponse>(
+        future: _futureKelengkapan,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
@@ -106,7 +106,6 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
               ),
             );
           }
-
           final perilaku = snapshot.data!;
           final santriList = perilaku.data.dataSantri;
 
@@ -159,7 +158,7 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
             height: 40,
             color: Colors.white.withOpacity(0.3),
           ),
-          _buildStatItem("Penilaian", "6 Aspek", Icons.assessment_rounded),
+          _buildStatItem("Penilaian", "3 Aspek", Icons.assessment_rounded),
         ],
       ),
     );
@@ -205,7 +204,7 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
       border: Border.all(color: Colors.grey.withOpacity(0.1)),
     ),
     child: Padding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -223,7 +222,6 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
                         color: Color(0xFF2D3748),
                       ),
                     ),
-                    const SizedBox(height: 4),
                     Text(
                       santri.tanggal,
                       style: const TextStyle(
@@ -240,14 +238,14 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
                   final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => DetailPerilakuScreen(noInduk: santri.noInduk),
+                      builder: (context) => DetailKelengkapanScreen(noInduk: santri.noInduk),
                     ),
                   );
 
                   if (result == true) {
                     // Refresh data
                     setState(() {
-                      _futurePerilaku = _service.fetchPerilakuData();
+                      _futureKelengkapan = _service.fetchKelengkapanData();
                     });
                   }
                 },
@@ -268,9 +266,9 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
             ],
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
 
-          // Skor Perilaku
+          // Skor Kelengkapan
           GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -279,12 +277,9 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
             crossAxisSpacing: 12,
             mainAxisSpacing: 8,
             children: [
-              _buildScoreRow(Icons.rule_rounded, "Ketertiban", santri.ketertiban, getBackgroundColor(santri.ketertiban)),
-              _buildScoreRow(Icons.timer_rounded, "Kedisiplinan", santri.kedisiplinan, getBackgroundColor(santri.kedisiplinan)),
-              _buildScoreRow(Icons.checkroom_rounded, "Kerapian", santri.kerapian, getBackgroundColor(santri.kerapian)),
-              _buildScoreRow(Icons.waving_hand_rounded, "Kesopanan", santri.kesopanan, getBackgroundColor(santri.kesopanan)),
-              _buildScoreRow(Icons.nature_people_rounded, "Kepekaan Lingkungan", santri.kepekaanLingkungan, getBackgroundColor(santri.kepekaanLingkungan)),
-              _buildScoreRow(Icons.gavel_rounded, "Ketaatan Peraturan", santri.ketaatanPeraturan, getBackgroundColor(santri.ketaatanPeraturan)),
+              _buildScoreRow(Icons.shower, "Mandi", santri.perlengkapanMandi, getBackgroundColor(santri.perlengkapanMandi)),
+              _buildScoreRow(Icons.school, "Alat Sekolah", santri.peralatanSekolah, getBackgroundColor(santri.peralatanSekolah)),
+              _buildScoreRow(Icons.checkroom, "Perlengkapan Diri", santri.perlengkapanDiri, getBackgroundColor(santri.perlengkapanDiri)),
             ],
           ),
         ],
@@ -298,14 +293,13 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
     return Row(
       children: [
         Container(
-          padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
             color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 16, color: color),
+          child: Icon(icon, size: 14, color: color),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 6),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -321,12 +315,16 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              Text(
-                score,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
+              Flexible(
+                child: Text(
+                  score,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

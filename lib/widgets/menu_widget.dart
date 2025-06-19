@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../screens/dashboard/perilaku_screen.dart';
 import '../screens/dashboard/saku_screen.dart';
+import '../screens/dashboard/kelengkapan_screen.dart';
+import '../screens/dashboard/pemeriksaan_screen.dart';
 
 class MenuIkonWidget extends StatelessWidget {
   const MenuIkonWidget({Key? key}) : super(key: key);
@@ -69,7 +71,12 @@ class MenuIkonWidget extends StatelessWidget {
                           'Kesehatan',
                           'Status kesehatan',
                           const Color(0xFF2196F3),
-                          () => _navigateToKesehatan(context),
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const PemeriksaanScreen()),
+                            );
+                          },
                         ),
                         _buildEnhancedMenuIkon(
                           Icons.rule_rounded,
@@ -85,10 +92,15 @@ class MenuIkonWidget extends StatelessWidget {
                         ),
                         _buildEnhancedMenuIkon(
                           Icons.assignment_rounded,
-                          'Tugas',
+                          'Kelengkapan',
                           'Tugas harian',
                           const Color(0xFF9C27B0),
-                          () => _navigateToTugas(context),
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const KelengkapanScreen()),
+                            );
+                          },
                         ),
                         _buildEnhancedMenuIkon(
                           Icons.book_rounded,
