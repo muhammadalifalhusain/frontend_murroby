@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import '../../models/perilaku_model.dart';
+import '../../services/perilaku_service.dart';
+
 class FormPerilakuScreen extends StatefulWidget {
   final int noInduk;
-  final String? namaSantri; // Optional untuk menampilkan nama
+  final String? namaSantri; 
 
   const FormPerilakuScreen({
     Key? key, 
@@ -20,11 +23,9 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
 
-  // Controllers dan variables
   DateTime _selectedDate = DateTime.now();
   final TextEditingController _dateController = TextEditingController();
 
-  // Nilai perilaku (0: Kurang Baik, 1: Cukup, 2: Baik)
   int _ketertiban = 2;
   int _kebersihan = 2;
   int _kedisiplinan = 2;
@@ -42,9 +43,9 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
 
   // Mapping nilai ke warna
   final Map<int, Color> _colorMap = {
-    0: const Color(0xFFEF4444), // merah
-    1: const Color(0xFFF59E0B), // orange
-    2: const Color(0xFF10B981), // hijau
+    0: const Color(0xFFEF4444), 
+    1: const Color(0xFFF59E0B), 
+    2: const Color(0xFF10B981), 
   };
 
   @override
@@ -87,38 +88,32 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
       });
     }
   }
-
   Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Data yang akan dikirim ke backend
-      final Map<String, dynamic> perilakuData = {
-        'noInduk': widget.noInduk,
-        'tanggal': DateFormat('yyyy-MM-dd').format(_selectedDate),
-        'ketertiban': _ketertiban,
-        'kebersihan': _kebersihan,
-        'kedisiplinan': _kedisiplinan,
-        'kerapian': _kerapian,
-        'kesopanan': _kesopanan,
-        'kepekaanLingkungan': _kepekaanLingkungan,
-        'ketaatanPeraturan': _ketaatanPeraturan,
-      };
+      final request = PerilakuPostRequest(
+        noInduk: widget.noInduk,
+        tanggal: DateFormat('yyyy-MM-dd').format(_selectedDate),
+        ketertiban: _ketertiban,
+        kebersihan: _kebersihan,
+        kedisiplinan: _kedisiplinan,
+        kerapian: _kerapian,
+        kesopanan: _kesopanan,
+        kepekaanLingkungan: _kepekaanLingkungan,
+        ketaatanPeraturan: _ketaatanPeraturan,
+      );
 
-      // TODO: Panggil service untuk submit data
-      // await PerilakuService().tambahPerilaku(perilakuData);
-      
-      // Simulasi delay
-      await Future.delayed(const Duration(seconds: 2));
+      // Kirim ke backend
+      final success = await PerilakuService().postPerilaku(request);
 
-      if (mounted) {
-        // Show success message
+      if (!mounted) return;
+
+      if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -126,7 +121,7 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
                 const Icon(Icons.check_circle, color: Colors.white),
                 const SizedBox(width: 12),
                 Text(
-                  'Data perilaku berhasil ditambahkan',
+                  'Data berhasil ditambahkan',
                   style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
                 ),
               ],
@@ -137,8 +132,23 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
           ),
         );
 
-        // Navigate back
-        Navigator.of(context).pop(true); // Return true untuk indicate success
+        Navigator.of(context).pop(true); 
+      } else {
+        // Gagal response 400+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 12),
+                const Text('Gagal menambahkan data perilaku'),
+              ],
+            ),
+            backgroundColor: const Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -150,7 +160,7 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Gagal menambahkan data: $e',
+                    'Terjadi kesalahan: $e',
                     style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
                   ),
                 ),
@@ -316,8 +326,6 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
                     ),
 
                     const SizedBox(height: 20),
-
-                    // Penilaian Perilaku Section
                     _buildSectionCard(
                       title: 'Penilaian Perilaku',
                       icon: Icons.assessment,
@@ -349,8 +357,6 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
                     ),
 
                     const SizedBox(height: 32),
-
-                    // Submit Button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(

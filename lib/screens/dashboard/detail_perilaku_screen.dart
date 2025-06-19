@@ -25,13 +25,13 @@ class _DetailPerilakuScreenState extends State<DetailPerilakuScreen> {
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'baik':
-        return const Color(0xFF10B981); // hijau
+        return const Color(0xFF10B981); 
       case 'cukup':
-        return const Color(0xFFF59E0B); // orange
+        return const Color(0xFFF59E0B); 
       case 'kurang baik':
-        return const Color(0xFFEF4444); // merah
+        return const Color(0xFFEF4444); 
       default:
-        return const Color(0xFF9CA3AF); // abu-abu
+        return const Color(0xFF9CA3AF); 
     }
   }
   @override

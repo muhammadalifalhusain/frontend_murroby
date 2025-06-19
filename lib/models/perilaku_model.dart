@@ -174,3 +174,43 @@ class ItemPerilaku {
   }
 }
 
+class PerilakuPostRequest {
+  final int noInduk;
+  final String tanggal;
+  final int ketertiban;
+  final int kebersihan;
+  final int kedisiplinan;
+  final int kerapian;
+  final int kesopanan;
+  final int kepekaanLingkungan;
+  final int ketaatanPeraturan;
+
+  PerilakuPostRequest({
+    required this.noInduk,
+    required this.tanggal,
+    required this.ketertiban,
+    required this.kebersihan,
+    required this.kedisiplinan,
+    required this.kerapian,
+    required this.kesopanan,
+    required this.kepekaanLingkungan,
+    required this.ketaatanPeraturan,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'noInduk': noInduk,
+      'tanggal': tanggal,
+      'ketertiban': ketertiban,
+      'kebersihan': kebersihan,
+      'kedisiplinan': kedisiplinan,
+      'kerapian': kerapian,
+      'kesopanan': kesopanan,
+      'kepekaanLingkungan': kepekaanLingkungan,
+      'ketaatanPeraturan': ketaatanPeraturan,
+    };
+  }
+}
+
+
+
