@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'detail_perilaku_screen.dart';
 import '../../models/perilaku_model.dart';
 import '../../services/perilaku_service.dart';
 
@@ -63,7 +63,6 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
           ],
         ),
       ),
-
       body: FutureBuilder<PerilakuResponse>(
         future: _futurePerilaku,
         builder: (context, snapshot) {
@@ -191,75 +190,102 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
   }
 
   Widget _buildSantriCard(DataSantri santri, int index) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+  return Container(
+    margin: const EdgeInsets.only(bottom: 16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.1),
+          blurRadius: 10,
+          offset: const Offset(0, 4),
+        ),
+      ],
+      border: Border.all(color: Colors.grey.withOpacity(0.1)),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      santri.nama,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2D3748),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      santri.tanggal,
+                      style: const TextStyle(
+                        color: Color(0xFF4A5568),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DetailPerilakuScreen(noInduk: santri.noInduk),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF667EEA),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                  elevation: 2,
+                ),
+                icon: const Icon(Icons.visibility, size: 13, color: Colors.white),
+                label: const Text(
+                  'Detail',
+                  style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // Skor Perilaku
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            childAspectRatio: 3.5,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 8,
+            children: [
+              _buildScoreRow(Icons.rule_rounded, "Ketertiban", santri.ketertiban, getBackgroundColor(santri.ketertiban)),
+              _buildScoreRow(Icons.timer_rounded, "Kedisiplinan", santri.kedisiplinan, getBackgroundColor(santri.kedisiplinan)),
+              _buildScoreRow(Icons.checkroom_rounded, "Kerapian", santri.kerapian, getBackgroundColor(santri.kerapian)),
+              _buildScoreRow(Icons.waving_hand_rounded, "Kesopanan", santri.kesopanan, getBackgroundColor(santri.kesopanan)),
+              _buildScoreRow(Icons.nature_people_rounded, "Kepekaan Lingkungan", santri.kepekaanLingkungan, getBackgroundColor(santri.kepekaanLingkungan)),
+              _buildScoreRow(Icons.gavel_rounded, "Ketaatan Peraturan", santri.ketaatanPeraturan, getBackgroundColor(santri.ketaatanPeraturan)),
+            ],
           ),
         ],
-        border: Border.all(color: Colors.grey.withOpacity(0.1)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header dengan nama dan tanggal
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    santri.nama,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3748),
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  child: Text(
-                    santri.tanggal,
-                    style: const TextStyle(
-                      color: Color(0xFF4A5568),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 16),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              childAspectRatio: 3.5,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 8,
-              children: [
-                _buildScoreRow(Icons.rule_rounded, "Ketertiban", santri.ketertiban, getBackgroundColor(santri.ketertiban)),
-                _buildScoreRow(Icons.timer_rounded, "Kedisiplinan", santri.kedisiplinan, getBackgroundColor(santri.kedisiplinan)),
-                _buildScoreRow(Icons.checkroom_rounded, "Kerapian", santri.kerapian, getBackgroundColor(santri.kerapian)),
-                _buildScoreRow(Icons.waving_hand_rounded, "Kesopanan", santri.kesopanan, getBackgroundColor(santri.kesopanan)),
-                _buildScoreRow(Icons.nature_people_rounded, "Kepekaan Lingkungan", santri.kepekaanLingkungan, getBackgroundColor(santri.kepekaanLingkungan)),
-                _buildScoreRow(Icons.gavel_rounded, "Ketaatan Peraturan", santri.ketaatanPeraturan, getBackgroundColor(santri.ketaatanPeraturan)),
-              ],
-            )
-          ],
-        ),
-      ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildScoreRow(IconData icon, String label, String score, Color color) {
     return Row(

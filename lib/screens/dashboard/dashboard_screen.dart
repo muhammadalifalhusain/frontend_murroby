@@ -460,12 +460,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ],
                 ),
-                
-                const SizedBox(height: 12),
-                
-                _buildSantriInfoRow(Icons.school_rounded, 'Kelas ${santri.kelasSantri}'),
-                _buildSantriInfoRow(Icons.phone_rounded, santri.noHpSantri),
-                _buildSantriInfoRow(Icons.location_on_rounded, santri.alamatLengkap),
+                const SizedBox(height: 12), 
+                _buildSantriInfoRow(Icons.school_rounded, 'Kelas ${santri.kelasSantri ?? 'Belum ditentukan'}'),
+                _buildSantriInfoRow(Icons.phone_rounded, santri.noHpSantri ?? 'Nomor tidak tersedia'),
+                _buildSantriInfoRow(Icons.location_on_rounded, santri.alamatLengkap ?? 'Alamat belum dilengkapi'),
               ],
             ),
           ),

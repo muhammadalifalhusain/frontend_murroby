@@ -98,3 +98,79 @@ class DataSantri {
     );
   }
 }
+
+
+class DetailPerilakuResponse {
+  final int status;
+  final String message;
+  final DetailPerilakuData data;
+
+  DetailPerilakuResponse({
+    required this.status,
+    required this.message,
+    required this.data,
+  });
+
+  factory DetailPerilakuResponse.fromJson(Map<String, dynamic> json) {
+    return DetailPerilakuResponse(
+      status: json['status'] ?? 0,
+      message: json['message'] ?? '',
+      data: DetailPerilakuData.fromJson(json['data']),
+    );
+  }
+}
+
+class DetailPerilakuData {
+  final String namaSantri;
+  final List<ItemPerilaku> dataPerilaku;
+
+  DetailPerilakuData({
+    required this.namaSantri,
+    required this.dataPerilaku,
+  });
+
+  factory DetailPerilakuData.fromJson(Map<String, dynamic> json) {
+    return DetailPerilakuData(
+      namaSantri: json['namaSantri'] ?? '',
+      dataPerilaku: (json['dataPerilaku'] as List)
+          .map((e) => ItemPerilaku.fromJson(e))
+          .toList(),
+    );
+  }
+}
+
+class ItemPerilaku {
+  final String tanggal;
+  final String ketertiban;
+  final String kebersihan;
+  final String kedisiplinan;
+  final String kerapian;
+  final String kesopanan;
+  final String kepekaanLingkungan;
+  final String ketaatanPeraturan;
+
+  ItemPerilaku({
+    required this.tanggal,
+    required this.ketertiban,
+    required this.kebersihan,
+    required this.kedisiplinan,
+    required this.kerapian,
+    required this.kesopanan,
+    required this.kepekaanLingkungan,
+    required this.ketaatanPeraturan,
+  });
+
+  factory ItemPerilaku.fromJson(Map<String, dynamic> json) {
+    return ItemPerilaku(
+      tanggal: json['tanggal'] ?? '',
+      ketertiban: json['ketertiban'] ?? '-',
+      kebersihan: json['kebersihan'] ?? '-',
+      kedisiplinan: json['kedisiplinan'] ?? '-',
+      kerapian: json['kerapian'] ?? '-',
+      kesopanan: json['kesopanan'] ?? '-',
+      kepekaanLingkungan: json['kepekaanLingkungan'] ?? '-',
+      ketaatanPeraturan: json['ketaatanPeraturan'] ?? '-',
+    );
+  }
+}
+
