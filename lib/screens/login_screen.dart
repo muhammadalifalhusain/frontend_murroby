@@ -184,10 +184,7 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby>
                                                 Navigator.pushReplacement(
                                                   context,
                                                   MaterialPageRoute(
-                                                    builder: (context) => MainScreen(
-                                                      userId: murrobyData['id'],
-                                                      murrobyData: murrobyData, 
-                                                    ),
+                                                    builder: (context) => DashboardScreen(),
                                                   ),
                                                 );
                                               } else {

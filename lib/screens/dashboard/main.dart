@@ -18,25 +18,29 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 1; 
+  int _selectedIndex = 1;
 
   final List<BottomNavigationBarItem> _navItems = [
-    BottomNavigationBarItem(
-      icon: Icon(Icons.account_balance_wallet),
-      label: 'Uang Saku',
-    ),
-    BottomNavigationBarItem(
+    const BottomNavigationBarItem(
       icon: Icon(Icons.dashboard),
       label: 'Dashboard',
     ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.local_hospital),
-      label: 'Kesehatan',
-    ),
   ];
 
+  final List<int> allowedIndexes = [1];
+
   void _onItemTapped(int index) {
-    setState(() => _selectedIndex = index);
+    if (allowedIndexes.contains(index)) {
+      setState(() => _selectedIndex = index);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Menu Sudah tidak aktif'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Widget _getCurrentScreen() {
@@ -44,11 +48,11 @@ class _MainScreenState extends State<MainScreen> {
       case 0:
         return UangSakuScreen(userId: widget.userId);
       case 1:
-        return DashboardScreen(); 
+        return DashboardScreen();
       case 2:
         return PemeriksaanScreen();
       default:
-        return DashboardScreen(); 
+        return DashboardScreen();
     }
   }
 
@@ -83,12 +87,8 @@ class _MainScreenState extends State<MainScreen> {
               unselectedFontSize: 11,
               elevation: 0,
               items: _navItems,
-              selectedLabelStyle: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-              unselectedLabelStyle: const TextStyle(
-                fontWeight: FontWeight.w500,
-              ),
+              selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
+              unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500),
             ),
           ),
         ),

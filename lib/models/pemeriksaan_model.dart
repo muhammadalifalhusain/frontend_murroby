@@ -163,56 +163,49 @@ class DataSantriDetail {
 class DataPemeriksaan {
   final int id;
   final int tanggalPemeriksaan;
-  final double tinggiBadan;
-  final double beratBadan;
-  final double lingkarPinggul;
-  final double lingkarDada;
-  final String kondisiGigi;
+  final double? tinggiBadan;
+  final double? beratBadan;
+  final double? lingkarPinggul;
+  final double? lingkarDada;
+  final String? kondisiGigi;
 
   DataPemeriksaan({
     required this.id,
     required this.tanggalPemeriksaan,
-    required this.tinggiBadan,
-    required this.beratBadan,
-    required this.lingkarPinggul,
-    required this.lingkarDada,
-    required this.kondisiGigi,
+    this.tinggiBadan,
+    this.beratBadan,
+    this.lingkarPinggul,
+    this.lingkarDada,
+    this.kondisiGigi,
   });
 
   factory DataPemeriksaan.fromJson(Map<String, dynamic> json) {
+    double? parseDouble(dynamic value) {
+      if (value == null) return null;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      return double.tryParse(value.toString());
+    }
+
     return DataPemeriksaan(
-      id: json['id'] is int ? json['id'] : int.parse(json['id']),
-      tanggalPemeriksaan: json['tanggalPemeriksaan'] is int 
-          ? json['tanggalPemeriksaan'] 
-          : int.parse(json['tanggalPemeriksaan']),
-      tinggiBadan: json['tinggiBadan'] is double 
-          ? json['tinggiBadan'] 
-          : (json['tinggiBadan'] is int 
-              ? json['tinggiBadan'].toDouble() 
-              : double.parse(json['tinggiBadan'])),
-      beratBadan: json['beratBadan'] is double 
-          ? json['beratBadan'] 
-          : (json['beratBadan'] is int 
-              ? json['beratBadan'].toDouble() 
-              : double.parse(json['beratBadan'])),
-      lingkarPinggul: json['lingkarPinggul'] is double 
-          ? json['lingkarPinggul'] 
-          : (json['lingkarPinggul'] is int 
-              ? json['lingkarPinggul'].toDouble() 
-              : double.parse(json['lingkarPinggul'])),
-      lingkarDada: json['lingkarDada'] is double 
-          ? json['lingkarDada'] 
-          : (json['lingkarDada'] is int 
-              ? json['lingkarDada'].toDouble() 
-              : double.parse(json['lingkarDada'])),
-      kondisiGigi: json['kondisiGigi'].toString(),
+      id: json['id'] is int ? json['id'] : int.tryParse(json['id'].toString()) ?? 0,
+      tanggalPemeriksaan: json['tanggalPemeriksaan'] is int
+          ? json['tanggalPemeriksaan']
+          : int.tryParse(json['tanggalPemeriksaan'].toString()) ?? 0,
+      tinggiBadan: parseDouble(json['tinggiBadan']),
+      beratBadan: parseDouble(json['beratBadan']),
+      lingkarPinggul: parseDouble(json['lingkarPinggul']),
+      lingkarDada: parseDouble(json['lingkarDada']),
+      kondisiGigi: json['kondisiGigi']?.toString(),
     );
   }
 
-  DateTime get tanggalPemeriksaanDate {
+  DateTime? get tanggalPemeriksaanDate {
+    if (tanggalPemeriksaan == 0) return null;
     return DateTime.fromMillisecondsSinceEpoch(tanggalPemeriksaan * 1000);
   }
 }
+
 
 
 // models/pemeriksaan_model.dart
@@ -250,7 +243,7 @@ class PemeriksaanPostRequest {
 class PemeriksaanPostResponse {
   final bool success;
   final String message;
-  final dynamic data; // Sesuaikan dengan struktur response dari server
+  final dynamic data; 
 
   PemeriksaanPostResponse({
     required this.success,

@@ -106,6 +106,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 20),
           _buildSummaryCards(santriList),
           MenuIkonWidget(),
+          // const SizedBox(height: 75),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Text(

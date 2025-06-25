@@ -77,7 +77,6 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
             children: [
               CustomScrollView(
                 slivers: [
-                  // Header Santri
                   SliverToBoxAdapter(
                     child: Container(
                       width: double.infinity,
@@ -523,11 +522,11 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
           padding: const EdgeInsets.all(12),
           child: Column(
             children: [
-              _buildDetailRow('Tinggi Badan', '${pemeriksaan.tinggiBadan} cm', Icons.height),
-              _buildDetailRow('Berat Badan', '${pemeriksaan.beratBadan} kg', Icons.monitor_weight),
-              _buildDetailRow('Lingkar Pinggul', '${pemeriksaan.lingkarPinggul} cm', Icons.straighten),
-              _buildDetailRow('Lingkar Dada', '${pemeriksaan.lingkarDada} cm', Icons.straighten),
-              _buildDetailRow('Kondisi Gigi', pemeriksaan.kondisiGigi, Icons.medical_services),
+              _buildDetailRow('Tinggi Badan', '${pemeriksaan.tinggiBadan ?? '-'} cm', Icons.height),
+              _buildDetailRow('Berat Badan', '${pemeriksaan.beratBadan ?? '-'} kg', Icons.monitor_weight),
+              _buildDetailRow('Lingkar Pinggul', '${pemeriksaan.lingkarPinggul ?? '-'} cm', Icons.straighten),
+              _buildDetailRow('Lingkar Dada', '${pemeriksaan.lingkarDada ?? '-'} cm', Icons.straighten),
+              _buildDetailRow('Kondisi Gigi', pemeriksaan.kondisiGigi ?? '-', Icons.medical_services),
             ],
           ),
         ),
@@ -608,8 +607,7 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
   }
 
   void _showDeleteConfirmation(DataPemeriksaan pemeriksaan) {
-    final rootContext = context; // Simpan context utama (bukan context dari dialog)
-
+    final rootContext = context; 
     showDialog(
       context: rootContext,
       builder: (dialogContext) => AlertDialog(

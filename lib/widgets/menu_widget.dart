@@ -33,7 +33,7 @@ class MenuIkonWidget extends StatelessWidget {
               ),
               const SizedBox(height: 5),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     return GridView.count(
@@ -42,7 +42,7 @@ class MenuIkonWidget extends StatelessWidget {
                       crossAxisCount: 3,
                       childAspectRatio: 0.85,
                       mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
+                      crossAxisSpacing: 8,
                       children: [
                         _buildEnhancedMenuIkon(
                           Icons.account_balance_wallet_rounded,
@@ -51,7 +51,7 @@ class MenuIkonWidget extends StatelessWidget {
                           const Color(0xFF4CAF50),
                           () async {
                             final prefs = await SharedPreferences.getInstance();
-                            final userId = prefs.getInt('userId');
+                            final userId = prefs.getInt('idUser');
                             if (userId != null) {
                               Navigator.push(
                                 context,
