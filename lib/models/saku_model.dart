@@ -18,8 +18,6 @@ class SantriUangSaku {
   }
 }
 
-
-
 class MurrobyData {
   final String nama;
   final String foto;

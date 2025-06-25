@@ -310,7 +310,6 @@ class _UangSakuScreenState extends State<UangSakuScreen>
       },
     );
   }
-
   Widget _buildStatsCards() {
     double totalSaldo = santriList.fold(
       0.0, (double sum, santri) => sum + (santri.jumlahSaldo ?? 0));
@@ -324,7 +323,7 @@ class _UangSakuScreenState extends State<UangSakuScreen>
               title: 'Total Santri',
               value: santriList.length.toString(),
               icon: Icons.people_rounded,
-              color: Color(0xFF3B82F6), // Blue 500
+              color: Color(0xFF3B82F6), 
             ),
           ),
           SizedBox(width: 12),
