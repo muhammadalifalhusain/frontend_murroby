@@ -27,7 +27,7 @@ class DetailSakuScreen extends StatefulWidget {
     late Future<DetailSakuResponse> futureUangKeluar;
     final NumberFormat currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
-    late TabController _tabController; // Tambah ini
+    late TabController _tabController;
 
     @override
     void initState() {
@@ -92,7 +92,6 @@ class DetailSakuScreen extends StatefulWidget {
                   Navigator.of(context).pop();
                 },
               ),
-              const SizedBox(width: 4),
               Expanded(
                 child: Text(
                   widget.namaSantri,
@@ -120,8 +119,7 @@ class DetailSakuScreen extends StatefulWidget {
             ),
           ),
           child: Column(
-            children: [
-              const SizedBox(height: 16), 
+            children: [ 
               Center(
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -130,8 +128,8 @@ class DetailSakuScreen extends StatefulWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Color(0xFF667EEA),
-                        Color(0xFF764BA2),
+                        Color(0xFF8B5CF6),
+                        Color(0xFF3B82F6),
                       ],
                     ),
                     borderRadius: BorderRadius.circular(20),
@@ -276,8 +274,8 @@ class DetailSakuScreen extends StatefulWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFF667EEA),
-                      Color(0xFF764BA2),
+                      Color(0xFF8B5CF6),
+                      Color(0xFF3B82F6),
                     ],
                   ),
                   borderRadius: BorderRadius.circular(16),
