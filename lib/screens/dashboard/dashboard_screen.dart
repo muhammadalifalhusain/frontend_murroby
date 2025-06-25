@@ -39,7 +39,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
    @override
-    Widget build(BuildContext context) {
+     Widget build(BuildContext context) {
       return Scaffold(
         backgroundColor: const Color.fromARGB(255, 230, 229, 229),
         appBar: AppBar(
@@ -59,8 +59,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ],
           ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
+              child: Center(
+                child: Text(
+                  'v.25.6',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black54,
+                  ),
+                ),
+              ),
+            ),
+          ],
           automaticallyImplyLeading: false,
         ),
+
         body: FutureBuilder<UserDataResponse>(
           future: _userDataFuture,
           builder: (context, snapshot) {
@@ -106,7 +122,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           const SizedBox(height: 20),
           _buildSummaryCards(santriList),
           MenuIkonWidget(),
-          // const SizedBox(height: 75),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Text(
@@ -119,14 +134,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           const SizedBox(height: 8),
-
           _buildSantriList(santriList),
         ],
       ),
     );
   }
-
-
   Widget _buildMurrobyProfileCard(DataUser murroby) {
     return Container(
       decoration: BoxDecoration(
@@ -193,7 +205,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                   ),
-                  
                 ],
               ),
               const SizedBox(width: 20),

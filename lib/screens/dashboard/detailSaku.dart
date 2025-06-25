@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart'; 
+import 'package:murroby/widgets/form_sakukeluar.dart'; 
 
 import 'package:google_fonts/google_fonts.dart';
 import 'package:murroby/models/detailSaku_model.dart';
 import 'package:murroby/services/detailSaku_service.dart';
 import '../../widgets/forn_sakumasuk.dart';
+import '../../widgets/form_sakukeluar.dart';
 
 class DetailSakuScreen extends StatefulWidget {
   final int noInduk;
@@ -48,106 +49,14 @@ class DetailSakuScreen extends StatefulWidget {
       });
     }
 
-  void _showAddUangKeluarDialog() async {
-    final formKey = GlobalKey<FormState>();
-    TextEditingController jumlahController = TextEditingController();
-    TextEditingController catatanController = TextEditingController();
-    TextEditingController tanggalController = TextEditingController();
-    DateTime selectedDate = DateTime.now();
-
-    tanggalController.text = DateFormat('yyyy-MM-dd').format(selectedDate);
-    final prefs = await SharedPreferences.getInstance();
-    final idUser = prefs.getInt('userId');
-
+  void _showAddUangKeluarDialog() {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Tambah Uang Keluar'),
-          content: Form(
-            key: formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: jumlahController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: 'Jumlah',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (val) =>
-                        val == null || val.isEmpty ? 'Masukkan jumlah' : null,
-                  ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: catatanController,
-                    decoration: const InputDecoration(
-                      labelText: 'Catatan',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (val) =>
-                        val == null || val.isEmpty ? 'Masukkan catatan' : null,
-                  ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: tanggalController,
-                    readOnly: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Tanggal',
-                      border: OutlineInputBorder(),
-                      suffixIcon: Icon(Icons.calendar_today),
-                    ),
-                    onTap: () async {
-                      final DateTime? picked = await showDatePicker(
-                        context: context,
-                        initialDate: selectedDate,
-                        firstDate: DateTime(2000),
-                        lastDate: DateTime(2101),
-                      );
-                      if (picked != null) {
-                        tanggalController.text =
-                            DateFormat('yyyy-MM-dd').format(picked);
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (formKey.currentState!.validate()) {
-                  try {
-                    final response = await DetailSakuService.postUangKeluar(
-                      noInduk: widget.noInduk,
-                      idUser: idUser ?? 0,
-                      jumlah: int.parse(jumlahController.text),
-                      catatan: catatanController.text,
-                      tanggal: tanggalController.text,
-                      allKamar: false,
-                    );
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(response)),
-                    );
-                    Navigator.pop(context);
-                    _refreshData();
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(e.toString())),
-                    );
-                  }
-                }
-              },
-              child: const Text('Simpan'),
-            ),
-          ],
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AddUangKeluarForm(
+          noInduk: widget.noInduk, 
+          onSuccess: _refreshData, 
         );
       },
     );
@@ -420,7 +329,10 @@ class DetailSakuScreen extends StatefulWidget {
                 ),
               ),
             );
-          } else if (!snapshot.hasData || snapshot.data!.dataUangMasuk == null) {
+          } else if (!snapshot.hasData || 
+            snapshot.data!.dataUangMasuk == null || 
+            snapshot.data!.dataUangMasuk!.isEmpty)
+          {
             return Center(
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -694,7 +606,9 @@ class DetailSakuScreen extends StatefulWidget {
                 ),
               ),
             );
-          } else if (!snapshot.hasData || snapshot.data!.dataUangKeluar == null) {
+          } else if (!snapshot.hasData ||
+              snapshot.data!.dataUangKeluar == null ||
+              snapshot.data!.dataUangKeluar!.isEmpty) {
             return Center(
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -732,7 +646,7 @@ class DetailSakuScreen extends StatefulWidget {
                           size: 64,
                           color: Colors.white,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 10),
                         Text(
                           'Tidak ada data uang keluar',
                           style: GoogleFonts.poppins(
@@ -797,7 +711,6 @@ class DetailSakuScreen extends StatefulWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                /// 🟢 Baris Judul dan Jumlah
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
@@ -842,10 +755,7 @@ class DetailSakuScreen extends StatefulWidget {
                                     ),
                                   ],
                                 ),
-
                                 const SizedBox(height: 16),
-
-                                /// 🟢 Info Tanggal & Murroby (gunakan Wrap agar responsif)
                                 Wrap(
                                   spacing: 12,
                                   runSpacing: 8,
@@ -918,10 +828,10 @@ class DetailSakuScreen extends StatefulWidget {
               },
             ),
           );
-
         },
       );
     }
+
 
     String _formatDate(String dateString) {
       try {

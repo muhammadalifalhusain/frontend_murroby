@@ -1,57 +1,28 @@
-import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import '../services/detailSaku_service.dart';
-class CurrencyInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.selection.baseOffset == 0) {
-      return newValue;
-    }
+import 'package:shared_preferences/shared_preferences.dart';
 
-    String newText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    
-    if (newText.isEmpty) {
-      return newValue.copyWith(text: '');
-    }
-    String formatted = '';
-    int counter = 0;
-    for (int i = newText.length - 1; i >= 0; i--) {
-      if (counter == 3) {
-        formatted = '.' + formatted;
-        counter = 0;
-      }
-      formatted = newText[i] + formatted;
-      counter++;
-    }
-    
-    return newValue.copyWith(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
-  }
-}
-
-class AddUangMasukForm extends StatefulWidget {
+class AddUangKeluarForm extends StatefulWidget {
   final int noInduk;
   final VoidCallback onSuccess;
 
-  const AddUangMasukForm({
+  const AddUangKeluarForm({
     Key? key,
     required this.noInduk,
     required this.onSuccess,
   }) : super(key: key);
 
   @override
-  State<AddUangMasukForm> createState() => _AddUangMasukFormState();
+  State<AddUangKeluarForm> createState() => _AddUangKeluarFormState();
 }
 
-class _AddUangMasukFormState extends State<AddUangMasukForm> {
+class _AddUangKeluarFormState extends State<AddUangKeluarForm> {
   final formKey = GlobalKey<FormState>();
-  int? selectedDari;
   final TextEditingController jumlahController = TextEditingController();
+  final TextEditingController catatanController = TextEditingController();
   final TextEditingController tanggalController = TextEditingController();
   DateTime selectedDate = DateTime.now();
   bool isLoading = false;
@@ -59,7 +30,6 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
   @override
   void initState() {
     super.initState();
-
     initializeDateFormatting('id_ID', null).then((_) {
       setState(() {
         tanggalController.text = DateFormat('dd MMMM yyyy', 'id_ID').format(selectedDate);
@@ -67,10 +37,10 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
     });
   }
 
-
   @override
   void dispose() {
     jumlahController.dispose();
+    catatanController.dispose();
     tanggalController.dispose();
     super.dispose();
   }
@@ -82,14 +52,18 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
       });
 
       try {
-        // Remove thousand separators for parsing
+        final prefs = await SharedPreferences.getInstance();
+        final idUser = prefs.getInt('userId');
+        
         String cleanAmount = jumlahController.text.replaceAll('.', '');
         
-        final response = await DetailSakuService.postUangMasuk(
+        final response = await DetailSakuService.postUangKeluar(
           noInduk: widget.noInduk,
-          dari: selectedDari!,
+          idUser: idUser ?? 0,
           jumlah: int.parse(cleanAmount),
+          catatan: catatanController.text,
           tanggal: DateFormat('yyyy-MM-dd').format(selectedDate),
+          allKamar: false,
         );
 
         if (mounted) {
@@ -111,7 +85,7 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
             ),
           );
 
-          widget.onSuccess(); // Callback untuk refresh data
+          widget.onSuccess();
           Navigator.pop(context);
         }
       } catch (e) {
@@ -163,7 +137,7 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
               Colors.blue.shade50,
             ],
           ),
-          borderRadius: BorderRadius.circular(12), 
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
@@ -173,7 +147,7 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12), 
+          borderRadius: BorderRadius.circular(12),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -186,8 +160,8 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Colors.blue.shade600,
-                      Colors.blue.shade400,
+                      Colors.red.shade600,
+                      Colors.red.shade400,
                     ],
                   ),
                 ),
@@ -197,17 +171,17 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(10), 
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
-                        Icons.add_circle_outline,
+                        Icons.remove_circle_outline,
                         size: 32,
                         color: Colors.white,
                       ),
                     ),
                     const SizedBox(height: 12),
                     const Text(
-                      'Tambah Uang Masuk',
+                      'Tambah Uang Keluar',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -225,9 +199,9 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _buildDropdownField(),
-                        const SizedBox(height: 20),
                         _buildAmountField(),
+                        const SizedBox(height: 20),
+                        _buildNoteField(),
                         const SizedBox(height: 20),
                         _buildDateField(),
                         const SizedBox(height: 32),
@@ -240,128 +214,6 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-
-  Widget _buildDropdownField() {
-    return DropdownButtonFormField<int>(
-      decoration: InputDecoration(
-        labelText: 'Sumber Uang',
-        labelStyle: TextStyle(
-          color: Colors.grey.shade700,
-          fontWeight: FontWeight.w500,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: Colors.blue.shade400, width: 2),
-        ),
-        filled: true,
-        fillColor: Colors.grey.shade50,
-        prefixIcon: Container(
-          constraints: BoxConstraints(
-            maxWidth: 48,  
-            maxHeight: 48, 
-          ),
-          margin: const EdgeInsets.all(8),
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.blue.shade100,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            Icons.account_balance_wallet, 
-            color: Colors.blue.shade600, 
-            size: 20,
-          ),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-        isDense: true,  
-      ),
-      isExpanded: true,
-      value: selectedDari,
-      items: [
-        DropdownMenuItem(
-          value: 1,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.7, 
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.money, size: 20, color: Colors.green),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    'Uang Saku',
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        DropdownMenuItem(
-          value: 2,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.7,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.people, size: 20, color: Colors.orange),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    'Kunjungan Walsan',
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        DropdownMenuItem(
-          value: 3,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.7,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.savings, size: 20, color: Colors.purple),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    'Sisa Bulan Kemarin',
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-      onChanged: (value) {
-        setState(() => selectedDari = value);
-      },
-      validator: (value) => value == null ? 'Pilih sumber uang' : null,
-      dropdownColor: Colors.white,
-      icon: const Icon(Icons.arrow_drop_down),
-      style: TextStyle(
-        fontSize: 14,
-        color: Colors.grey.shade800,
       ),
     );
   }
@@ -393,10 +245,10 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
           margin: const EdgeInsets.all(12),
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.green.shade100,
+            color: Colors.red.shade100,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(Icons.payments, color: Colors.green.shade600, size: 20),
+          child: Icon(Icons.payments, color: Colors.red.shade600, size: 20),
         ),
         prefixText: 'Rp ',
         prefixStyle: TextStyle(
@@ -425,6 +277,49 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
         }
         if (int.parse(cleanValue) <= 0) {
           return 'Jumlah harus lebih dari 0';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildNoteField() {
+    return TextFormField(
+      controller: catatanController,
+      decoration: InputDecoration(
+        labelText: 'Catatan',
+        labelStyle: TextStyle(
+          color: Colors.grey.shade700,
+          fontWeight: FontWeight.w500,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.blue.shade400, width: 2),
+        ),
+        filled: true,
+        fillColor: Colors.grey.shade50,
+        prefixIcon: Container(
+          margin: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.purple.shade100,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(Icons.note, color: Colors.purple.shade600, size: 20),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Masukkan catatan';
         }
         return null;
       },
@@ -513,7 +408,7 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.red,
               side: const BorderSide(color: Colors.red, width: 2),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10), 
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -524,7 +419,7 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
               'BATAL',
               style: TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 13, 
+                fontSize: 13,
               ),
             ),
           ),
@@ -533,14 +428,14 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
         Expanded(
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue.shade600,
+              backgroundColor: Colors.red.shade600,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
               elevation: 3,
-              shadowColor: Colors.blue.shade200,
+              shadowColor: Colors.red.shade200,
             ),
             onPressed: isLoading ? null : _submitForm,
             icon: isLoading
@@ -557,12 +452,43 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
               isLoading ? 'MENYIMPAN...' : 'SIMPAN',
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
-                fontSize: 12, 
+                fontSize: 12,
               ),
             ),
           ),
         ),
       ],
+    );
+  }
+}
+
+class CurrencyInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.selection.baseOffset == 0) {
+      return newValue;
+    }
+
+    String newText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    
+    if (newText.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+    String formatted = '';
+    int counter = 0;
+    for (int i = newText.length - 1; i >= 0; i--) {
+      if (counter == 3) {
+        formatted = '.' + formatted;
+        counter = 0;
+      }
+      formatted = newText[i] + formatted;
+      counter++;
+    }
+    
+    return newValue.copyWith(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
     );
   }
 }
