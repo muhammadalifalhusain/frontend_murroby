@@ -11,12 +11,13 @@ class SantriUangSaku {
 
   factory SantriUangSaku.fromJson(Map<String, dynamic> json) {
     return SantriUangSaku(
-      noIndukSantri: json['noIndukSantri'],
-      namaSantri: json['namaSantri'],
-      jumlahSaldo: json['jumlahSaldo'],
+      noIndukSantri: json['noIndukSantri'] ?? 0,
+      namaSantri: json['namaSantri'] ?? '',
+      jumlahSaldo: json['jumlahSaldo'] ?? 0,
     );
   }
 }
+
 
 
 class MurrobyData {
@@ -34,7 +35,8 @@ class MurrobyData {
     return MurrobyData(
       nama: json['namaMurroby'] ?? '',
       foto: json['fotoMurroby'] ?? '',
-      kodeKamar: json['kodeKamar'] ?? '-',
+      kodeKamar: json['kodeKamar'] ?? '',
     );
   }
 }
+

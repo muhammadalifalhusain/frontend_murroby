@@ -477,8 +477,6 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
           fontSize: 14,
         ),
       ),
-
-      // Trailing popup actions
       trailing: PopupMenuButton<String>(
         icon: Icon(Icons.more_vert, color: Colors.grey[600]),
         itemBuilder: (context) => [
@@ -511,8 +509,6 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
           }
         },
       ),
-
-      // Expanded content
       children: [
         Container(
           decoration: BoxDecoration(
