@@ -85,8 +85,7 @@ class _PemeriksaanFormScreenState extends State<PemeriksaanFormScreen>
         kondisiGigi: _kondisiGigiController.text,
       );
 
-      final response = await _service.createPemeriksaan(request);
-
+      final response = await PemeriksaanService.createPemeriksaan(request);
       if (mounted) {
         _showCustomSnackBar(response.message, isError: false);
         await Future.delayed(const Duration(milliseconds: 1500));

@@ -24,9 +24,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<UserDataResponse> _fetchUserData() async {
     try {
-      // Tetap memuat SharedPreferences meskipun mungkin tidak digunakan langsung
       await SharedPreferences.getInstance();
-      return await _apiService.fetchUserData();
+      return await ApiService.fetchUserData();
     } catch (e) {
       throw Exception('Gagal memuat data: ${e.toString()}');
     }

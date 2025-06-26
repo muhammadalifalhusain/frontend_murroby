@@ -103,7 +103,7 @@ class _FormKelengkapanScreenState extends State<FormKelengkapanScreen> {
       catatanDiri: _catatanDiriController.text,
     );
 
-    final success = await KelengkapanService().postKelengkapan(request);
+    final success = await KelengkapanService.postKelengkapan(request);
 
     if (!mounted) return;
 

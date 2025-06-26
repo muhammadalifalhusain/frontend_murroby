@@ -14,12 +14,12 @@ class PemeriksaanScreen extends StatefulWidget {
 
 class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
   late Future<PemeriksaanResponse> _pemeriksaanFuture;
-  final PemeriksaanService _service = PemeriksaanService();
 
   @override
   void initState() {
     super.initState();
-    _pemeriksaanFuture = _service.getPemeriksaanData();
+    _pemeriksaanFuture = PemeriksaanService.getPemeriksaanData();
+
   }
 
   @override

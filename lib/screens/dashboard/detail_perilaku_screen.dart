@@ -19,7 +19,7 @@ class _DetailPerilakuScreenState extends State<DetailPerilakuScreen> {
   @override
   void initState() {
     super.initState();
-    _futureDetail = PerilakuService().fetchDetailPerilaku(widget.noInduk);
+    _futureDetail = PerilakuService.fetchDetailPerilaku(widget.noInduk);
   }
 
   Color _getStatusColor(String status) {
@@ -223,7 +223,7 @@ class _DetailPerilakuScreenState extends State<DetailPerilakuScreen> {
 
                       if (result == true) {
                         setState(() {
-                          _futureDetail = PerilakuService().fetchDetailPerilaku(widget.noInduk);
+                          _futureDetail = PerilakuService.fetchDetailPerilaku(widget.noInduk);
                         });
                       }
                     },

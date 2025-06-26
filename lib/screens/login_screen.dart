@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:murroby/screens/dashboard/main.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 import 'dashboard/dashboard_screen.dart';
 import '../services/login_service.dart';
+import '../utils/session_manager.dart';
 
 class LoginScreenMurroby extends StatefulWidget {
   @override
@@ -128,8 +127,14 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby> {
                                     if (result['success']) {
                                       final murrobyData = result['data'];
 
-                                      SharedPreferences prefs = await SharedPreferences.getInstance();
-                                      await prefs.setInt('idUser', murrobyData['id']);
+                                      await SessionManager.saveMurrobySession(
+                                        idUser: murrobyData.idUser,
+                                        nama: murrobyData.namaMurroby,
+                                        photo: murrobyData.photo,
+                                        accessToken: murrobyData.accessToken,
+                                        expiresIn: murrobyData.expiresIn,
+                                      );
+
 
                                       Navigator.pushReplacement(
                                         context,

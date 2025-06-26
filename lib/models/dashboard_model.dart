@@ -1,4 +1,3 @@
-// user_data_model.dart
 class UserDataResponse {
   final int status;
   final String message;

@@ -27,7 +27,7 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
   @override
   void initState() {
     super.initState();
-    _detailFuture = _service.getPemeriksaanDetail(widget.noInduk);
+    _detailFuture = PemeriksaanService.getPemeriksaanDetail(widget.noInduk);
   }
 
   @override
@@ -220,7 +220,7 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
 
                     if (result == true && mounted) {
                       setState(() {
-                        _detailFuture = _service.getPemeriksaanDetail(santri.noInduk);
+                        _detailFuture = PemeriksaanService.getPemeriksaanDetail(santri.noInduk);
                       });
                     }
                   },
@@ -292,7 +292,7 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
             ElevatedButton.icon(
               onPressed: () {
                 setState(() {
-                  _detailFuture = _service.getPemeriksaanDetail(widget.noInduk);
+                  _detailFuture = PemeriksaanService.getPemeriksaanDetail(widget.noInduk); 
                 });
               },
               icon: Icon(Icons.refresh),
@@ -620,7 +620,7 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
               Navigator.pop(dialogContext); // Tutup dialog dulu
 
               try {
-                final success = await PemeriksaanService().deletePemeriksaan(pemeriksaan.id);
+                final success = await PemeriksaanService.deletePemeriksaan(pemeriksaan.id);
 
                 if (success && mounted) {
                   ScaffoldMessenger.of(rootContext).showSnackBar(
@@ -628,7 +628,7 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
                   );
 
                   setState(() {
-                    _detailFuture = _service.getPemeriksaanDetail(widget.noInduk);
+                    _detailFuture = PemeriksaanService.getPemeriksaanDetail(widget.noInduk);
                   });
                 }
               } catch (e) {

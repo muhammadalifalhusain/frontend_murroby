@@ -43,7 +43,7 @@ class _UangSakuScreenState extends State<UangSakuScreen>
   }
 
   Future<void> fetchData() async {
-    final result = await UangSakuService.fetchUangSaku(widget.userId);
+    final result = await SakuService.fetchUangSaku();
 
     if (result['success']) {
       setState(() {
@@ -489,7 +489,6 @@ class _UangSakuScreenState extends State<UangSakuScreen>
                     ],
                   ),
                 ),
-
                 const SizedBox(width: 8),
                 Align(
                   alignment: Alignment.centerRight,
@@ -513,5 +512,4 @@ class _UangSakuScreenState extends State<UangSakuScreen>
       ),
     );
   }
-
 }

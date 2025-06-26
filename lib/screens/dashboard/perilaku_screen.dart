@@ -32,7 +32,7 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
   @override
   void initState() {
     super.initState();
-    _futurePerilaku = _service.fetchPerilakuData();
+    _futurePerilaku = PerilakuService.fetchPerilakuData();
   }
 
   @override
@@ -247,7 +247,7 @@ class _PerilakuScreenState extends State<PerilakuScreen> {
                   if (result == true) {
                     // Refresh data
                     setState(() {
-                      _futurePerilaku = _service.fetchPerilakuData();
+                      _futurePerilaku = PerilakuService.fetchPerilakuData();
                     });
                   }
                 },

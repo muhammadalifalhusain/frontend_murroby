@@ -109,7 +109,7 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
       );
 
       // Kirim ke backend
-      final success = await PerilakuService().postPerilaku(request);
+      final success = await PerilakuService.postPerilaku(request);
 
       if (!mounted) return;
 

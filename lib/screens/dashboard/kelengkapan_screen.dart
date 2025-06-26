@@ -32,7 +32,7 @@ class _KelengkapanScreenState extends State<KelengkapanScreen> {
   @override
   void initState() {
     super.initState();
-    _futureKelengkapan = _service.fetchKelengkapanData();
+    _futureKelengkapan = KelengkapanService.fetchKelengkapanData();
   }
 
   @override
@@ -243,9 +243,8 @@ class _KelengkapanScreenState extends State<KelengkapanScreen> {
                   );
 
                   if (result == true) {
-                    // Refresh data
                     setState(() {
-                      _futureKelengkapan = _service.fetchKelengkapanData();
+                      _futureKelengkapan = KelengkapanService.fetchKelengkapanData();
                     });
                   }
                 },

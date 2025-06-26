@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import '../utils/session_manager.dart';
 
+import '../screens/dashboard/dashboard_screen.dart';
 import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -24,14 +26,10 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
-    // Initialize scale animation controller
     _scaleController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-
-    // Create animations
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
@@ -50,8 +48,6 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Start animations
     _startAnimations();
-    
-    // Navigate to next screen after delay
     _navigateToHome();
   }
 
@@ -62,14 +58,18 @@ class _SplashScreenState extends State<SplashScreen>
     });
   }
 
-  void _navigateToHome() {
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreenMurroby()),
-      );
-    });
+  void _navigateToHome() async {
+    final isLoggedIn = await SessionManager.isUserLoggedIn();
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            isLoggedIn ? DashboardScreen() : LoginScreenMurroby(),
+      ),
+    );
   }
+
 
   @override
   void dispose() {

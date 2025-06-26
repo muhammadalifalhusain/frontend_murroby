@@ -80,9 +80,7 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
       setState(() {
         isLoading = true;
       });
-
       try {
-        // Remove thousand separators for parsing
         String cleanAmount = jumlahController.text.replaceAll('.', '');
         
         final response = await DetailSakuService.postUangMasuk(
@@ -111,7 +109,7 @@ class _AddUangMasukFormState extends State<AddUangMasukForm> {
             ),
           );
 
-          widget.onSuccess(); // Callback untuk refresh data
+          widget.onSuccess(); 
           Navigator.pop(context);
         }
       } catch (e) {

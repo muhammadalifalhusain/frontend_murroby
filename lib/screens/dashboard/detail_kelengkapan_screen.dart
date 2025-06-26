@@ -19,7 +19,7 @@ class _DetailKelengkapanScreenState extends State<DetailKelengkapanScreen> {
   @override
   void initState() {
     super.initState();
-    _futureDetail = KelengkapanService().fetchDetailKelengkapan(widget.noInduk);
+    _futureDetail = KelengkapanService.fetchDetailKelengkapan(widget.noInduk);
   }
 
   Color getBackgroundColor(String value) {
@@ -216,7 +216,7 @@ class _DetailKelengkapanScreenState extends State<DetailKelengkapanScreen> {
                     );
                     if (result == true) {
                       setState(() {
-                        _futureDetail = KelengkapanService().fetchDetailKelengkapan(widget.noInduk);
+                        _futureDetail = KelengkapanService.fetchDetailKelengkapan(widget.noInduk);
                       });
                     }
                   },
@@ -377,7 +377,7 @@ class _DetailKelengkapanScreenState extends State<DetailKelengkapanScreen> {
                         );
 
                         if (confirm == true) {
-                          final success = await KelengkapanService().deleteKelengkapan(item.id);
+                          final success = await KelengkapanService.deleteKelengkapan(item.id);
                           if (success) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
@@ -389,7 +389,7 @@ class _DetailKelengkapanScreenState extends State<DetailKelengkapanScreen> {
                               ),
                             );
                             setState(() {
-                              _futureDetail = KelengkapanService().fetchDetailKelengkapan(widget.noInduk);
+                              _futureDetail = KelengkapanService.fetchDetailKelengkapan(widget.noInduk);
                             });
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
