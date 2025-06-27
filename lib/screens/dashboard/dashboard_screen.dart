@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../login_screen.dart';
 import '../../services/dashboard_service.dart';
 import '../../models/dashboard_model.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../widgets/menu_widget.dart';
+import '../../utils/session_manager.dart';
 
 
 class DashboardScreen extends StatefulWidget {
@@ -12,13 +14,11 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  late final ApiService _apiService;
   late Future<UserDataResponse> _userDataFuture;
 
   @override
   void initState() {
     super.initState();
-    _apiService = ApiService();
     _userDataFuture = _fetchUserData();
   }
 
@@ -117,10 +117,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          
           _buildMurrobyProfileCard(murroby),
           const SizedBox(height: 20),
           _buildSummaryCards(santriList),
           MenuIkonWidget(),
+          _buildLogoutButton(context),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             child: Text(
@@ -138,6 +140,45 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 216, 47, 72),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color.fromARGB(255, 192, 33, 22).withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ListTile(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          leading: const Icon(Icons.logout, color: Colors.white),
+          title: const Text(
+            'Keluar Akun',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          onTap: () async {
+            await SessionManager.clearSession();
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => LoginScreenMurroby()),
+              (route) => false,
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _buildMurrobyProfileCard(DataUser murroby) {
     return Container(
       decoration: BoxDecoration(
