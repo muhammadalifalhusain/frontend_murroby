@@ -178,7 +178,7 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby> {
           Padding(
             padding: const EdgeInsets.only(bottom: 20),
             child: Text(
-              'BETA VERSION-V.25.6',
+              'BETA VERSION-V.30.6',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,

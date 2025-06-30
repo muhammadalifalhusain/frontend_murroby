@@ -338,7 +338,7 @@ class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
                   _buildInfoRow(
                     Icons.calendar_today_rounded,
                     'Tanggal Pemeriksaan',
-                    santri.tanggalPemeriksaan ?? 'Belum diperiksa',
+                    santri.tanggalPemeriksaanFormatted ?? 'Belum diperiksa',
                   ),
                   const Divider(color: Color(0xFFE2E8F0)),
                   _buildInfoRow(

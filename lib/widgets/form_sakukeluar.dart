@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import '../services/detailSaku_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../utils/session_manager.dart';
 
 class AddUangKeluarForm extends StatefulWidget {
   final int noInduk;
@@ -52,19 +52,29 @@ class _AddUangKeluarFormState extends State<AddUangKeluarForm> {
       });
 
       try {
-        final prefs = await SharedPreferences.getInstance();
-        final idUser = prefs.getInt('userId');
-        
+        final idUser = await SessionManager.getIdUser();
+
+        if (idUser == null || idUser == 0) {
+          throw Exception("ID User tidak ditemukan. Silakan login ulang.");
+        }
+
         String cleanAmount = jumlahController.text.replaceAll('.', '');
-        
+
         final response = await DetailSakuService.postUangKeluar(
           noInduk: widget.noInduk,
-          idUser: idUser ?? 0,
+          idUser: idUser,
           jumlah: int.parse(cleanAmount),
           catatan: catatanController.text,
           tanggal: DateFormat('yyyy-MM-dd').format(selectedDate),
           allKamar: false,
         );
+
+        print('--- POST UANG KELUAR ---');
+        print('noInduk: ${widget.noInduk}');
+        print('idUser: $idUser');
+        print('jumlah: $cleanAmount');
+        print('catatan: ${catatanController.text}');
+        print('tanggal: ${DateFormat('yyyy-MM-dd').format(selectedDate)}');
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -117,6 +127,7 @@ class _AddUangKeluarFormState extends State<AddUangKeluarForm> {
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

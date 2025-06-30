@@ -70,6 +70,7 @@ class DataSantri {
   final double? lingkarPinggul;
   final double? lingkarDada;
   final String? kondisiGigi;
+  final String? tanggalPemeriksaanFormatted;
 
   DataSantri({
     required this.noInduk,
@@ -80,6 +81,7 @@ class DataSantri {
     this.lingkarPinggul,
     this.lingkarDada,
     this.kondisiGigi,
+    this.tanggalPemeriksaanFormatted,
   });
 
   factory DataSantri.fromJson(Map<String, dynamic> json) {
@@ -92,6 +94,7 @@ class DataSantri {
       lingkarPinggul: _parseDouble(json['lingkarPinggul']),
       lingkarDada: _parseDouble(json['lingkarDada']),
       kondisiGigi: json['kondisiGigi']?.toString(),
+      tanggalPemeriksaanFormatted: json['tanggalPemeriksaanFormatted']?.toString(),
     );
   }
 
@@ -168,6 +171,7 @@ class DataPemeriksaan {
   final double? lingkarPinggul;
   final double? lingkarDada;
   final String? kondisiGigi;
+  final String? tanggalPemeriksaanFormatted;
 
   DataPemeriksaan({
     required this.id,
@@ -177,6 +181,7 @@ class DataPemeriksaan {
     this.lingkarPinggul,
     this.lingkarDada,
     this.kondisiGigi,
+    this.tanggalPemeriksaanFormatted,
   });
 
   factory DataPemeriksaan.fromJson(Map<String, dynamic> json) {
@@ -197,6 +202,7 @@ class DataPemeriksaan {
       lingkarPinggul: parseDouble(json['lingkarPinggul']),
       lingkarDada: parseDouble(json['lingkarDada']),
       kondisiGigi: json['kondisiGigi']?.toString(),
+      tanggalPemeriksaanFormatted: json['tanggalPemeriksaanFormatted']?.toString(),
     );
   }
 
@@ -205,10 +211,6 @@ class DataPemeriksaan {
     return DateTime.fromMillisecondsSinceEpoch(tanggalPemeriksaan * 1000);
   }
 }
-
-
-
-// models/pemeriksaan_model.dart
 
 class PemeriksaanPostRequest {
   final String noInduk;

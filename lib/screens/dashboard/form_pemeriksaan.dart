@@ -27,8 +27,6 @@ class _PemeriksaanFormScreenState extends State<PemeriksaanFormScreen>
   bool _isLoading = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-
-  // Data form
   DateTime? _tanggalPemeriksaan;
   final _tinggiBadanController = TextEditingController();
   final _beratBadanController = TextEditingController();
@@ -60,6 +58,11 @@ class _PemeriksaanFormScreenState extends State<PemeriksaanFormScreen>
     super.dispose();
   }
 
+  int safeParseInt(String? value, {int fallback = 0}) {
+    return int.tryParse(value?.trim() ?? '') ?? fallback;
+  }
+
+
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
     if (_tanggalPemeriksaan == null) {
@@ -78,12 +81,13 @@ class _PemeriksaanFormScreenState extends State<PemeriksaanFormScreen>
       final request = PemeriksaanPostRequest(
         noInduk: widget.noInduk,
         tanggalPemeriksaan: DateFormat('yyyy-MM-dd').format(_tanggalPemeriksaan!),
-        tinggiBadan: int.parse(_tinggiBadanController.text),
-        beratBadan: int.parse(_beratBadanController.text),
-        lingkarPinggul: int.parse(_lingkarPinggulController.text),
-        lingkarDada: int.parse(_lingkarDadaController.text),
+        tinggiBadan: safeParseInt(_tinggiBadanController.text),
+        beratBadan: safeParseInt(_beratBadanController.text),
+        lingkarPinggul: safeParseInt(_lingkarPinggulController.text),
+        lingkarDada: safeParseInt(_lingkarDadaController.text),
         kondisiGigi: _kondisiGigiController.text,
       );
+
 
       final response = await PemeriksaanService.createPemeriksaan(request);
       if (mounted) {
@@ -402,59 +406,35 @@ class _PemeriksaanFormScreenState extends State<PemeriksaanFormScreen>
         label: 'Tinggi Badan',
         suffix: 'cm',
         icon: Icons.height,
-        validator: (value) {
-          if (value == null || value.isEmpty) return 'Tinggi badan harus diisi';
-          if (int.tryParse(value) == null) return 'Masukkan angka yang valid';
-          return null;
-        },
       ),
-      const SizedBox(height: 16),
+      const SizedBox(height: 12),
       _buildCustomTextField(
         controller: _beratBadanController,
         label: 'Berat Badan',
         suffix: 'kg',
         icon: Icons.monitor_weight,
-        validator: (value) {
-          if (value == null || value.isEmpty) return 'Berat badan harus diisi';
-          if (int.tryParse(value) == null) return 'Masukkan angka yang valid';
-          return null;
-        },
       ),
-      const SizedBox(height: 16),
+      const SizedBox(height: 12),
       _buildCustomTextField(
         controller: _lingkarPinggulController,
         label: 'Lingkar Pinggul',
         suffix: 'cm',
         icon: Icons.straighten,
-        validator: (value) {
-          if (value == null || value.isEmpty) return 'Lingkar pinggul harus diisi';
-          if (int.tryParse(value) == null) return 'Masukkan angka yang valid';
-          return null;
-        },
       ),
-      const SizedBox(height: 16),
+      const SizedBox(height: 12),
       _buildCustomTextField(
         controller: _lingkarDadaController,
         label: 'Lingkar Dada',
         suffix: 'cm',
         icon: Icons.straighten,
-        validator: (value) {
-          if (value == null || value.isEmpty) return 'Lingkar dada harus diisi';
-          if (int.tryParse(value) == null) return 'Masukkan angka yang valid';
-          return null;
-        },
       ),
-      const SizedBox(height: 16),
+      const SizedBox(height: 12),
       _buildCustomTextField(
         controller: _kondisiGigiController,
         label: 'Kondisi Gigi',
         icon: Icons.sentiment_satisfied,
         maxLines: 3,
         keyboardType: TextInputType.multiline,
-        validator: (value) {
-          if (value == null || value.isEmpty) return 'Kondisi gigi harus diisi';
-          return null;
-        },
       ),
     ];
   }

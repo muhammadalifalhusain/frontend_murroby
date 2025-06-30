@@ -38,75 +38,75 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
    @override
-     Widget build(BuildContext context) {
-      return Scaffold(
-        backgroundColor: const Color.fromARGB(255, 230, 229, 229),
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          title: Row(
-            children: [
-              const Icon(Icons.dashboard, color: Colors.black87),
-              const SizedBox(width: 6),
-              Text(
-                'Dashboard',
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Center(
-                child: Text(
-                  'v.25.6',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black54,
-                  ),
-                ),
+   Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 230, 229, 229),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Row(
+          children: [
+            const Icon(Icons.dashboard, color: Colors.black87),
+            const SizedBox(width: 6),
+            Text(
+              'Dashboard',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
               ),
             ),
           ],
-          automaticallyImplyLeading: false,
         ),
-
-        body: FutureBuilder<UserDataResponse>(
-          future: _userDataFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return SizedBox(
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667EEA)),
-                  ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Center(
+              child: Text(
+                'v.30.6',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black54,
                 ),
-              );
-            }
+              ),
+            ),
+          ),
+        ],
+        automaticallyImplyLeading: false,
+      ),
 
-            if (snapshot.hasError) {
-              return _buildErrorWidget(snapshot.error.toString());
-            }
-
-            if (!snapshot.hasData || snapshot.data == null) {
-              return _buildEmptyDataWidget();
-            }
-
-            final userData = snapshot.data!;
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: _buildDashboardContent(userData),
+      body: FutureBuilder<UserDataResponse>(
+        future: _userDataFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: const Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667EEA)),
+                ),
+              ),
             );
-          },
-        ),
-      );
-    }
+          }
+
+          if (snapshot.hasError) {
+            return _buildErrorWidget(snapshot.error.toString());
+          }
+
+          if (!snapshot.hasData || snapshot.data == null) {
+            return _buildEmptyDataWidget();
+          }
+
+          final userData = snapshot.data!;
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: _buildDashboardContent(userData),
+          );
+        },
+      ),
+    );
+  }
 
   Widget _buildDashboardContent(UserDataResponse userData) {
     final murroby = userData.data.dataUser;
