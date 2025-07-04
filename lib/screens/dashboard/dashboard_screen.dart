@@ -6,6 +6,7 @@ import '../../services/dashboard_service.dart';
 import '../../models/dashboard_model.dart';
 import '../../widgets/menu_widget.dart';
 import '../../utils/session_manager.dart';
+import '../../services/login_service.dart';
 
 
 class DashboardScreen extends StatefulWidget {
@@ -63,7 +64,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             padding: const EdgeInsets.only(right: 16),
             child: Center(
               child: Text(
-                'v.30.6',
+                'v.30.7',
                 style: GoogleFonts.poppins(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -167,12 +168,51 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ),
           onTap: () async {
-            await SessionManager.clearSession();
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => LoginScreenMurroby()),
-              (route) => false,
+            final scaffold = ScaffoldMessenger.of(context);
+            
+            // Show loading dialog
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => Center(child: CircularProgressIndicator()),
             );
+
+            try {
+              // Call logout service
+              final result = await LoginService.logout();
+              
+              // Clear session data
+              await SessionManager.clearSession();
+              
+              // Close loading dialog
+              Navigator.of(context).pop();
+              
+              // Navigate to login screen
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => LoginScreenMurroby()),
+                (route) => false,
+              );
+              
+              // Show success message
+              scaffold.showSnackBar(
+                SnackBar(
+                  content: Text(result['message'] ?? 'Logout berhasil'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            } catch (e) {
+              // Close loading dialog on error
+              Navigator.of(context).pop();
+              
+              // Show error message
+              scaffold.showSnackBar(
+                SnackBar(
+                  content: Text('Gagal logout: ${e.toString()}'),
+                  backgroundColor: Colors.red,
+                ),
+              );
+            }
           },
         ),
       ),
