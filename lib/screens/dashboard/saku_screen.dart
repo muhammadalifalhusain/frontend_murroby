@@ -4,6 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:murroby/models/saku_model.dart';
 import 'package:murroby/services/saku_service.dart';
 import 'detailSaku.dart';
+
+import 'tambah_uang_keluar_screen.dart';
+import 'tambah_uang_masuk_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class UangSakuScreen extends StatefulWidget {
@@ -312,13 +315,40 @@ class _UangSakuScreenState extends State<UangSakuScreen>
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              'Data Keuangan',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
-              ),
+            Row(
+              children: [
+                TextButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TambahUangMasukScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.add_circle_outline, color: Colors.green),
+                  label: const Text(
+                    'Saku Masuk',
+                    style: TextStyle(color: Colors.green),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                TextButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TambahUangKeluarScreen(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                  label: const Text(
+                    'Saku Keluar',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -330,6 +360,7 @@ class _UangSakuScreenState extends State<UangSakuScreen>
       ],
     );
   }
+
 
   Widget _buildEmptyState({required String message}) {
     return Container(
