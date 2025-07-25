@@ -120,16 +120,25 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
       setState(() => _isLoading = true);
 
       try {
+        final raw = _jumlahController.text;
+        final cleaned = raw.replaceAll(RegExp(r'[^0-9]'), '');
+        final jumlah = int.tryParse(cleaned);
+
+        // Debug print untuk melihat nilai rawText, cleanedText, dan jumlah
+        print("Raw Text: $raw");
+        print("Cleaned Text: $cleaned");
+        print("Jumlah: $jumlah");
+
         final result = await DetailSakuService.postUangMasuk(
           noInduk: _selectedSantri!.noIndukSantri,
           dari: _selectedDari.toString(),
-          jumlah: int.parse(_jumlahController.text),
+          jumlah: jumlah!,
           tanggal: DateFormat('yyyy-MM-dd').format(_selectedDate!),
         );
 
         if (mounted) {
           _showSuccessSnackBar(result);
-          Navigator.pop(context, true); // Return true to indicate success
+          Navigator.pop(context, true);
         }
       } catch (e) {
         _showErrorSnackBar(e.toString());
@@ -171,7 +180,12 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
             ),
             const SizedBox(height: 12),
             _buildConfirmationItem('Santri', _selectedSantri?.namaSantri ?? ''),
-            _buildConfirmationItem('Jumlah', 'Rp ${NumberFormat('#,##0', 'id').format(int.parse(_jumlahController.text))}'),
+            _buildConfirmationItem(
+                'Jumlah',
+                'Rp ${NumberFormat('#,##0', 'id').format(
+                  int.parse(_jumlahController.text.replaceAll(RegExp(r'[^0-9]'), '')),
+                )}',
+              ),
             _buildConfirmationItem('Sumber', _getDariText(_selectedDari)),
             _buildConfirmationItem('Tanggal', DateFormat('dd MMMM yyyy', 'id').format(_selectedDate!)),
           ],
@@ -386,10 +400,18 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
           TextInputFormatter.withFunction((oldValue, newValue) {
-            if (newValue.text.isEmpty) return newValue;
-            final number = int.tryParse(newValue.text);
-            if (number == null) return oldValue;
-            final formatted = NumberFormat('#,##0', 'id').format(number);
+            String newText = newValue.text.replaceAll('.', '');
+            if (newText.isEmpty) return newValue;
+
+            final buffer = StringBuffer();
+            for (int i = 0; i < newText.length; i++) {
+              if (i != 0 && (newText.length - i) % 3 == 0) {
+                buffer.write('.');
+              }
+              buffer.write(newText[i]);
+            }
+
+            final formatted = buffer.toString();
             return TextEditingValue(
               text: formatted,
               selection: TextSelection.collapsed(offset: formatted.length),
@@ -397,9 +419,9 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
           }),
         ],
         decoration: InputDecoration(
-          labelText: 'Jumlah Uang',
+          labelText: 'Jumlah Pengeluaran',
           labelStyle: GoogleFonts.poppins(color: Colors.grey.shade600),
-          hintText: 'Masukkan jumlah uang',
+          hintText: 'Masukkan jumlah pengeluaran',
           hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
@@ -411,10 +433,10 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
             margin: const EdgeInsets.all(12),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.green.shade100,
+              color: Colors.red.shade100,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(Icons.attach_money, color: Colors.green.shade600, size: 20),
+            child: Icon(Icons.money_off, color: Colors.red.shade600, size: 20),
           ),
           prefixText: 'Rp ',
           prefixStyle: GoogleFonts.poppins(
@@ -426,7 +448,8 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
         style: GoogleFonts.poppins(fontSize: 14),
         validator: (val) {
           if (val == null || val.isEmpty) return 'Jumlah wajib diisi';
-          final cleanValue = val.replaceAll(',', '');
+
+          final cleanValue = val.replaceAll('.', '');
           final number = int.tryParse(cleanValue);
           if (number == null || number <= 0) return 'Jumlah harus berupa angka positif';
           return null;
@@ -534,17 +557,17 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
                 margin: const EdgeInsets.only(right: 12),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.green.shade100,
+                  color: Colors.red.shade100,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(Icons.calendar_today, color: Colors.green.shade600, size: 20),
+                child: Icon(Icons.calendar_today, color: Colors.red.shade600, size: 20),
               ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Tanggal Transaksi',
+                      'Tanggal',
                       style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Colors.grey.shade600,
@@ -553,8 +576,8 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
                     const SizedBox(height: 4),
                     Text(
                       _selectedDate == null
-                          ? 'Pilih tanggal transaksi'
-                          : DateFormat('EEEE, dd MMMM yyyy', 'id').format(_selectedDate!),
+                          ? 'Pilih tanggal'
+                          : DateFormat('dd MMMM yyyy').format(_selectedDate!),
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: _selectedDate == null ? Colors.grey.shade400 : Colors.grey.shade800,
@@ -683,17 +706,16 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
                                   color: Colors.grey.shade800,
                                 ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 13),
                               _buildSantriDropdown(),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 16),
                               _buildJumlahField(),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 16),
                               _buildDariDropdown(),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 16),
                               _buildDatePicker(),
-                              const SizedBox(height: 32),
+                              const SizedBox(height: 16),
                               _buildSubmitButton(),
-                              const SizedBox(height: 24),
                             ],
                           ),
                         ),

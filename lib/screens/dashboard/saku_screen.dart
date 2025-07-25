@@ -337,13 +337,16 @@ class _UangSakuScreenState extends State<UangSakuScreen>
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => TambahUangMasukScreen(),
                           ),
                         );
+                        if (result == true) {
+                          fetchData();
+                        }
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Padding(
@@ -404,13 +407,17 @@ class _UangSakuScreenState extends State<UangSakuScreen>
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () {
-                        Navigator.push(
+                      onTap: () async {
+                        final result = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => TambahUangKeluarScreen(),
                           ),
                         );
+
+                        if (result == true) {
+                          fetchData();
+                        }
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Padding(
@@ -451,15 +458,13 @@ class _UangSakuScreenState extends State<UangSakuScreen>
       ),
 
       const SizedBox(height: 10),
-
-      // List Santri
-      if (santriList.isEmpty)
-        _buildEmptyState(message: 'Belum ada data santri')
-      else
-        _buildSantriList(),
-    ],
-  );
-}
+        if (santriList.isEmpty)
+          _buildEmptyState(message: 'Belum ada data santri')
+        else
+          _buildSantriList(),
+      ],
+    );
+  }
 
   Widget _buildEmptyState({required String message}) {
     return Container(

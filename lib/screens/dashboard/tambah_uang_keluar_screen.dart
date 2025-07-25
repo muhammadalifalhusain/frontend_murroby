@@ -112,42 +112,66 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
   }
 
   Future<void> _submit() async {
-    if (!_allKamar && _selectedSantri == null) {
-      _showErrorSnackBar("Santri harus dipilih!");
+  // Validasi pemilihan santri jika allKamar tidak dipilih
+  if (!_allKamar && _selectedSantri == null) {
+    _showErrorSnackBar("Santri harus dipilih!");
+    return;
+  }
+
+  // Validasi form dan pemilihan tanggal
+  if (!_formKey.currentState!.validate() || _selectedDate == null) {
+    if (_selectedDate == null) {
+      _showErrorSnackBar("Tanggal harus dipilih!");
+    }
+    return;
+  }
+
+  // Tampilkan dialog konfirmasi
+  final confirmed = await _showConfirmationDialog();
+  if (!confirmed) return;
+
+  setState(() => _isLoading = true);
+
+  try {
+    // Ambil dan bersihkan input jumlah
+    final raw = _jumlahController.text;
+    final cleaned = raw.replaceAll(RegExp(r'[^0-9]'), '');
+    final jumlah = int.tryParse(cleaned);
+
+    // Debug print untuk melihat nilai rawText, cleanedText, dan jumlah
+    print("Raw Text: $raw");
+    print("Cleaned Text: $cleaned");
+    print("Jumlah: $jumlah");
+
+    // Validasi jumlah
+    if (jumlah == null || jumlah <= 0) {
+      _showErrorSnackBar("Jumlah harus berupa angka positif!");
       return;
     }
 
-    if (_formKey.currentState!.validate() && _selectedDate != null) {
-      // Show confirmation dialog
-      final confirmed = await _showConfirmationDialog();
-      if (!confirmed) return;
+    // Kirim data ke service
+    final result = await DetailSakuService.postUangKeluar(
+      jumlah: jumlah,
+      catatan: _catatanController.text,
+      tanggal: DateFormat('yyyy-MM-dd').format(_selectedDate!),
+      allKamar: _allKamar,
+      noInduk: _allKamar ? null : _selectedSantri!.noIndukSantri,
+    );
 
-      setState(() => _isLoading = true);
-
-      try {
-        final result = await DetailSakuService.postUangKeluar(
-          jumlah: int.parse(_jumlahController.text.replaceAll(',', '')),
-          catatan: _catatanController.text,
-          tanggal: DateFormat('yyyy-MM-dd').format(_selectedDate!),
-          allKamar: _allKamar,
-          noInduk: _allKamar ? null : _selectedSantri!.noIndukSantri,
-        );
-
-        if (mounted) {
-          _showSuccessSnackBar(result);
-          Navigator.pop(context, true); // Return true to indicate success
-        }
-      } catch (e) {
-        _showErrorSnackBar(e.toString());
-      } finally {
-        setState(() => _isLoading = false);
-      }
-    } else {
-      if (_selectedDate == null) {
-        _showErrorSnackBar("Tanggal harus dipilih!");
-      }
+    // Tampilkan pesan sukses dan kembali ke halaman sebelumnya
+    if (mounted) {
+      _showSuccessSnackBar(result);
+      Navigator.pop(context, true);
     }
+  } catch (e) {
+    // Tampilkan pesan kesalahan jika terjadi
+    _showErrorSnackBar("Terjadi kesalahan: ${e.toString()}");
+  } finally {
+    // Set loading state ke false
+    setState(() => _isLoading = false);
   }
+}
+
 
   Future<bool> _showConfirmationDialog() async {
     return await showDialog<bool>(
@@ -183,8 +207,13 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
             if (_allKamar)
               _buildConfirmationItem('Target', 'Semua Kamar')
             else
-              _buildConfirmationItem('Santri', _selectedSantri?.namaSantri ?? ''),
-            _buildConfirmationItem('Jumlah', 'Rp ${NumberFormat('#,##0', 'id').format(int.parse(_jumlahController.text.replaceAll(',', '')))}'),
+            _buildConfirmationItem('Santri', _selectedSantri?.namaSantri ?? ''),
+            _buildConfirmationItem(
+              'Jumlah',
+              'Rp ${NumberFormat('#,##0', 'id').format(
+                int.parse(_jumlahController.text.replaceAll(RegExp(r'[^0-9]'), '')),
+              )}',
+            ),
             _buildConfirmationItem('Catatan', _catatanController.text),
             _buildConfirmationItem('Tanggal', DateFormat('dd MMMM yyyy', 'id').format(_selectedDate!)),
           ],
@@ -295,7 +324,7 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
                 const Spacer(),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 18),
             Text(
               'Tambah Uang Keluar',
               style: GoogleFonts.poppins(
@@ -308,7 +337,7 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
             Text(
               'Catat pengeluaran uang santri dengan mudah',
               style: GoogleFonts.poppins(
-                fontSize: 14,
+                fontSize: 13,
                 color: Colors.white.withOpacity(0.9),
               ),
             ),
@@ -353,7 +382,7 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Terapkan ke Semua Kamar',
+                    'Terapkan ke Semua Santri',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -468,10 +497,18 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
           TextInputFormatter.withFunction((oldValue, newValue) {
-            if (newValue.text.isEmpty) return newValue;
-            final number = int.tryParse(newValue.text);
-            if (number == null) return oldValue;
-            final formatted = NumberFormat('#,##0', 'id').format(number);
+            String newText = newValue.text.replaceAll('.', '');
+            if (newText.isEmpty) return newValue;
+
+            final buffer = StringBuffer();
+            for (int i = 0; i < newText.length; i++) {
+              if (i != 0 && (newText.length - i) % 3 == 0) {
+                buffer.write('.');
+              }
+              buffer.write(newText[i]);
+            }
+
+            final formatted = buffer.toString();
             return TextEditingValue(
               text: formatted,
               selection: TextSelection.collapsed(offset: formatted.length),
@@ -508,7 +545,8 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
         style: GoogleFonts.poppins(fontSize: 14),
         validator: (val) {
           if (val == null || val.isEmpty) return 'Jumlah wajib diisi';
-          final cleanValue = val.replaceAll(',', '');
+
+          final cleanValue = val.replaceAll('.', '');
           final number = int.tryParse(cleanValue);
           if (number == null || number <= 0) return 'Jumlah harus berupa angka positif';
           return null;
@@ -516,6 +554,7 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
       ),
     );
   }
+
 
   Widget _buildCatatanField() {
     return Container(
@@ -606,7 +645,7 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
                     Text(
                       _selectedDate == null
                           ? 'Pilih tanggal pengeluaran'
-                          : DateFormat('EEEE, dd MMMM yyyy', 'id').format(_selectedDate!),
+                          : DateFormat('dd MMMM yyyy').format(_selectedDate!),
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         color: _selectedDate == null ? Colors.grey.shade400 : Colors.grey.shade800,
@@ -735,19 +774,18 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
                                   color: Colors.grey.shade800,
                                 ),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 13),
                               _buildAllKamarSwitch(),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 16),
                               _buildSantriDropdown(),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 16),
                               _buildJumlahField(),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 16),
                               _buildCatatanField(),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 16),
                               _buildDatePicker(),
-                              const SizedBox(height: 32),
+                              const SizedBox(height: 25),
                               _buildSubmitButton(),
-                              const SizedBox(height: 24),
                             ],
                           ),
                         ),

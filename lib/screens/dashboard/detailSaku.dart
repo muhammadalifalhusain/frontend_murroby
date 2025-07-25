@@ -237,7 +237,7 @@ class DetailSakuScreen extends StatefulWidget {
                 return Card(
                   margin: const EdgeInsets.only(bottom: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 2,
+                  elevation: 1.5,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Column(
@@ -252,6 +252,7 @@ class DetailSakuScreen extends StatefulWidget {
                                 style: GoogleFonts.poppins(
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
+                                  color: Colors.grey[800],
                                 ),
                               ),
                             ),
@@ -259,8 +260,8 @@ class DetailSakuScreen extends StatefulWidget {
                               currencyFormat.format(uangMasuk.jumlahMasuk),
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green[700],
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[800],
                               ),
                             ),
                           ],
@@ -288,97 +289,33 @@ class DetailSakuScreen extends StatefulWidget {
     }
 
 
+
     Widget _buildUangKeluarTab() {
       return FutureBuilder<DetailSakuResponse>(
         future: futureUangKeluar,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF667EEA),
-                      Color(0xFF764BA2),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF667EEA).withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  strokeWidth: 3,
-                ),
-              ),
-            );
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF667EEA),
-                      Color(0xFF764BA2),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF667EEA).withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Terjadi kesalahan',
+                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${snapshot.error}',
+                      style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[700]),
+                      textAlign: TextAlign.center,
                     ),
                   ],
-                ),
-                child: Card(
-                  elevation: 0,
-                  color: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          size: 64,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Terjadi kesalahan',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${snapshot.error}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: Colors.white.withOpacity(0.8),
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ),
             );
@@ -386,55 +323,18 @@ class DetailSakuScreen extends StatefulWidget {
               snapshot.data!.dataUangKeluar == null ||
               snapshot.data!.dataUangKeluar!.isEmpty) {
             return Center(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Color(0xFF667EEA),
-                      Color(0xFF764BA2),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF667EEA).withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.money_off_outlined, size: 48, color: Colors.grey),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Tidak ada data uang keluar',
+                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
                     ),
                   ],
-                ),
-                child: Card(
-                  elevation: 0,
-                  color: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.money_off_outlined,
-                          size: 64,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Tidak ada data uang keluar',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
               ),
             );
@@ -443,163 +343,47 @@ class DetailSakuScreen extends StatefulWidget {
           final data = snapshot.data!;
           final uangKeluarList = data.dataUangKeluar!;
           return RefreshIndicator(
-            color: const Color(0xFF667EEA),
-            onRefresh: () async {
-              _refreshData();
-            },
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: uangKeluarList.length,
-                  itemBuilder: (context, index) {
-                    final uangKeluar = uangKeluarList[index];
-                    return ConstrainedBox(
-                      constraints: BoxConstraints(maxWidth: constraints.maxWidth),
-                      child: Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color(0xFF667EEA),
-                              Color(0xFF764BA2),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF667EEA).withOpacity(0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
+            onRefresh: () async => _refreshData(),
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: uangKeluarList.length,
+              itemBuilder: (context, index) {
+                final uangKeluar = uangKeluarList[index];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: ListTile(
+                    title: Text(
+                      uangKeluar.catatan,
+                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 4),
+                        Text(
+                          'Tanggal: ${_formatDate(uangKeluar.tanggalTransaksi)}',
+                          style: GoogleFonts.poppins(fontSize: 13),
                         ),
-                        child: Card(
-                          elevation: 0,
-                          color: Colors.transparent,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        uangKeluar.catatan,
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.2),
-                                        borderRadius: BorderRadius.circular(15),
-                                        border: Border.all(
-                                          color: Colors.white.withOpacity(0.3),
-                                          width: 1,
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.white.withOpacity(0.1),
-                                            blurRadius: 10,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ],
-                                      ),
-                                      child: Text(
-                                        currencyFormat.format(uangKeluar.jumlahKeluar),
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w700,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                                Wrap(
-                                  spacing: 12,
-                                  runSpacing: 8,
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.15),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.calendar_today_outlined,
-                                            size: 16,
-                                            color: Colors.white.withOpacity(0.9),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            _formatDate(uangKeluar.tanggalTransaksi),
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 13,
-                                              color: Colors.white.withOpacity(0.9),
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withOpacity(0.15),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.person_outline,
-                                            size: 16,
-                                            color: Colors.white.withOpacity(0.9),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Flexible(
-                                            child: Text(
-                                              uangKeluar.namaMurroby,
-                                              style: GoogleFonts.poppins(
-                                                fontSize: 13,
-                                                color: Colors.white.withOpacity(0.9),
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
+                        Text(
+                          'Petugas: ${uangKeluar.namaMurroby}',
+                          style: GoogleFonts.poppins(fontSize: 13),
                         ),
+                      ],
+                    ),
+                    trailing: Text(
+                      currencyFormat.format(uangKeluar.jumlahKeluar),
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.redAccent,
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 );
               },
             ),
@@ -607,6 +391,7 @@ class DetailSakuScreen extends StatefulWidget {
         },
       );
     }
+
 
 
     String _formatDate(String dateString) {
