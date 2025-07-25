@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../models/dashboard_model.dart';
 import '../../services/dashboard_service.dart';
 import '../../services/detailSaku_service.dart';
-
+import '../../utils/session_manager.dart';
 class TambahUangKeluarScreen extends StatefulWidget {
   const TambahUangKeluarScreen({Key? key}) : super(key: key);
 
@@ -200,12 +200,18 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Pastikan data pengeluaran berikut sudah benar:',
+              'Pastikan data pengeluaran berikut sudah benar ya',
               style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 12),
             if (_allKamar)
-              _buildConfirmationItem('Target', 'Semua Kamar')
+            FutureBuilder<String>(
+              future: SessionManager.getNamaMurroby(),
+              builder: (context, snapshot) {
+                final nama = snapshot.data ?? '-';
+                return _buildConfirmationItem('Target', 'Semua santri binaan kamar $nama');
+              },
+            )
             else
             _buildConfirmationItem('Santri', _selectedSantri?.namaSantri ?? ''),
             _buildConfirmationItem(
@@ -324,7 +330,7 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
                 const Spacer(),
               ],
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
             Text(
               'Tambah Uang Keluar',
               style: GoogleFonts.poppins(
@@ -333,11 +339,11 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               'Catat pengeluaran uang santri dengan mudah',
               style: GoogleFonts.poppins(
-                fontSize: 13,
+                fontSize: 12,
                 color: Colors.white.withOpacity(0.9),
               ),
             ),

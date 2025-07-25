@@ -175,11 +175,11 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Pastikan data berikut sudah benar:',
+              'Pastikan data detail dibawah sudah benar ya',
               style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 12),
-            _buildConfirmationItem('Santri', _selectedSantri?.namaSantri ?? ''),
+            _buildConfirmationItem('Nama', _selectedSantri?.namaSantri ?? ''),
             _buildConfirmationItem(
                 'Jumlah',
                 'Rp ${NumberFormat('#,##0', 'id').format(
@@ -305,7 +305,7 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
                 const Spacer(),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 14),
             Text(
               'Tambah Uang Masuk',
               style: GoogleFonts.poppins(
@@ -314,11 +314,11 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
                 color: Colors.white,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               'Catat pemasukan uang santri dengan mudah',
               style: GoogleFonts.poppins(
-                fontSize: 14,
+                fontSize: 12,
                 color: Colors.white.withOpacity(0.9),
               ),
             ),
