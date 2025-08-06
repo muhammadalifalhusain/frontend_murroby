@@ -220,46 +220,18 @@ class _PemeriksaanFormScreenState extends State<PemeriksaanFormScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.teal.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.teal.shade700,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                const Text(
-                  'Informasi Santri',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            _buildInfoItem('Nomor Induk', widget.noInduk, Icons.badge),
-            const SizedBox(height: 12),
-            _buildInfoItem('Nama Santri', widget.namaSantri, Icons.account_circle),
+            _buildInfoItem('Nama Santri', widget.namaSantri),
+            const SizedBox(height: 6),
+            _buildInfoItem('NIS', widget.noInduk),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoItem(String label, String value, IconData icon) {
+  Widget _buildInfoItem(String label, String value) {
     return Row(
       children: [
-        Icon(icon, size: 20, color: Colors.teal.shade600),
-        const SizedBox(width: 12),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

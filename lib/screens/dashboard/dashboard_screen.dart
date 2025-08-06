@@ -509,8 +509,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                     
                     const SizedBox(width: 12),
-                    
-                    // Info utama (nama dan NIS)
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

@@ -104,8 +104,8 @@ class MenuIkonWidget extends StatelessWidget {
                         ),
                         _buildEnhancedMenuIkon(
                           Icons.book_rounded,
-                          'Materi',
-                          'Bahan belajar',
+                          'Pelanggaran',
+                          'Buat Data Pelanggaran',
                           const Color(0xFF00BCD4),
                           () => _navigateToMateri(context),
                         ),
