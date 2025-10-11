@@ -113,64 +113,64 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
 
   Future<void> _submit() async {
   // Validasi pemilihan santri jika allKamar tidak dipilih
-  if (!_allKamar && _selectedSantri == null) {
-    _showErrorSnackBar("Santri harus dipilih!");
-    return;
-  }
-
-  // Validasi form dan pemilihan tanggal
-  if (!_formKey.currentState!.validate() || _selectedDate == null) {
-    if (_selectedDate == null) {
-      _showErrorSnackBar("Tanggal harus dipilih!");
-    }
-    return;
-  }
-
-  // Tampilkan dialog konfirmasi
-  final confirmed = await _showConfirmationDialog();
-  if (!confirmed) return;
-
-  setState(() => _isLoading = true);
-
-  try {
-    // Ambil dan bersihkan input jumlah
-    final raw = _jumlahController.text;
-    final cleaned = raw.replaceAll(RegExp(r'[^0-9]'), '');
-    final jumlah = int.tryParse(cleaned);
-
-    // Debug print untuk melihat nilai rawText, cleanedText, dan jumlah
-    print("Raw Text: $raw");
-    print("Cleaned Text: $cleaned");
-    print("Jumlah: $jumlah");
-
-    // Validasi jumlah
-    if (jumlah == null || jumlah <= 0) {
-      _showErrorSnackBar("Jumlah harus berupa angka positif!");
+    if (!_allKamar && _selectedSantri == null) {
+      _showErrorSnackBar("Santri harus dipilih!");
       return;
     }
 
-    // Kirim data ke service
-    final result = await DetailSakuService.postUangKeluar(
-      jumlah: jumlah,
-      catatan: _catatanController.text,
-      tanggal: DateFormat('yyyy-MM-dd').format(_selectedDate!),
-      allKamar: _allKamar,
-      noInduk: _allKamar ? null : _selectedSantri!.noIndukSantri,
-    );
-
-    // Tampilkan pesan sukses dan kembali ke halaman sebelumnya
-    if (mounted) {
-      _showSuccessSnackBar(result);
-      Navigator.pop(context, true);
+    // Validasi form dan pemilihan tanggal
+    if (!_formKey.currentState!.validate() || _selectedDate == null) {
+      if (_selectedDate == null) {
+        _showErrorSnackBar("Tanggal harus dipilih!");
+      }
+      return;
     }
-  } catch (e) {
-    // Tampilkan pesan kesalahan jika terjadi
-    _showErrorSnackBar("Terjadi kesalahan: ${e.toString()}");
-  } finally {
-    // Set loading state ke false
-    setState(() => _isLoading = false);
+
+    // Tampilkan dialog konfirmasi
+    final confirmed = await _showConfirmationDialog();
+    if (!confirmed) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      // Ambil dan bersihkan input jumlah
+      final raw = _jumlahController.text;
+      final cleaned = raw.replaceAll(RegExp(r'[^0-9]'), '');
+      final jumlah = int.tryParse(cleaned);
+
+      // Debug print untuk melihat nilai rawText, cleanedText, dan jumlah
+      print("Raw Text: $raw");
+      print("Cleaned Text: $cleaned");
+      print("Jumlah: $jumlah");
+
+      // Validasi jumlah
+      if (jumlah == null || jumlah <= 0) {
+        _showErrorSnackBar("Jumlah harus berupa angka positif!");
+        return;
+      }
+
+      // Kirim data ke service
+      final result = await DetailSakuService.postUangKeluar(
+        jumlah: jumlah,
+        catatan: _catatanController.text,
+        tanggal: DateFormat('yyyy-MM-dd').format(_selectedDate!),
+        allKamar: _allKamar,
+        noInduk: _allKamar ? null : _selectedSantri!.noIndukSantri,
+      );
+
+      // Tampilkan pesan sukses dan kembali ke halaman sebelumnya
+      if (mounted) {
+        _showSuccessSnackBar(result);
+        Navigator.pop(context, true);
+      }
+    } catch (e) {
+      // Tampilkan pesan kesalahan jika terjadi
+      _showErrorSnackBar("Terjadi kesalahan: ${e.toString()}");
+    } finally {
+      // Set loading state ke false
+      setState(() => _isLoading = false);
+    }
   }
-}
 
 
   Future<bool> _showConfirmationDialog() async {
@@ -784,13 +784,13 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
                               _buildAllKamarSwitch(),
                               const SizedBox(height: 16),
                               _buildSantriDropdown(),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 14),
                               _buildJumlahField(),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 14),
                               _buildCatatanField(),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 14),
                               _buildDatePicker(),
-                              const SizedBox(height: 25),
+                              const SizedBox(height: 21),
                               _buildSubmitButton(),
                             ],
                           ),

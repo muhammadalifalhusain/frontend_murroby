@@ -419,9 +419,9 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
           }),
         ],
         decoration: InputDecoration(
-          labelText: 'Jumlah Pengeluaran',
+          labelText: 'Tambahkan Jumlah',
           labelStyle: GoogleFonts.poppins(color: Colors.grey.shade600),
-          hintText: 'Masukkan jumlah pengeluaran',
+          hintText: 'Masukkan Jumlah Saku Masuk',
           hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
@@ -714,7 +714,7 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
                               _buildDariDropdown(),
                               const SizedBox(height: 16),
                               _buildDatePicker(),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 20),
                               _buildSubmitButton(),
                             ],
                           ),
