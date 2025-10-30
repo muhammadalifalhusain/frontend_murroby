@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 import 'package:google_fonts/google_fonts.dart';
 import 'package:murroby/models/detailSaku_model.dart';
 import 'package:murroby/services/detailSaku_service.dart';
@@ -19,387 +18,574 @@ class DetailSakuScreen extends StatefulWidget {
   _DetailSakuScreenState createState() => _DetailSakuScreenState();
 }
 
-  class _DetailSakuScreenState extends State<DetailSakuScreen> with SingleTickerProviderStateMixin {
-    late Future<DetailSakuResponse> futureUangMasuk;
-    late Future<DetailSakuResponse> futureUangKeluar;
-    final NumberFormat currencyFormat = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+class _DetailSakuScreenState extends State<DetailSakuScreen>
+    with SingleTickerProviderStateMixin {
+  late Future<DetailSakuResponse> futureUangMasuk;
+  late Future<DetailSakuResponse> futureUangKeluar;
+  late TabController _tabController;
+  final NumberFormat currencyFormat =
+      NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
 
-    late TabController _tabController;
+  // untuk melacak panel yang terbuka
+  String? expandedMonthMasuk;
+  String? expandedMonthKeluar;
 
-    @override
-    void initState() {
-      super.initState();
-      _tabController = TabController(length: 2, vsync: this); 
-      _refreshData();
-    }
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _refreshData();
+  }
 
-    @override
-    void dispose() {
-      _tabController.dispose(); 
-      super.dispose();
-    }
+  void _refreshData() {
+    setState(() {
+      futureUangMasuk = DetailSakuService.fetchUangMasuk(widget.noInduk);
+      futureUangKeluar = DetailSakuService.fetchUangKeluar(widget.noInduk);
+    });
+  }
 
-    void _refreshData() {
-      setState(() {
-        futureUangMasuk = DetailSakuService.fetchUangMasuk(widget.noInduk);
-        futureUangKeluar = DetailSakuService.fetchUangKeluar(widget.noInduk);
-      });
-    }
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  int _monthOrder(String bulan) {
+    const urutan = [
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember"
+    ];
+    return urutan.indexOf(bulan);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 230, 229, 229), 
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 1,
-          toolbarHeight: 64,
-          automaticallyImplyLeading: false,
-          titleSpacing: 0,
-          title: Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
+      backgroundColor: const Color(0xFFF0F2FA),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false, 
+        titleSpacing: 0, 
+        title: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+              onPressed: () => Navigator.pop(context),
+            ),
+            Expanded(
+              child: Text(
+                widget.namaSantri,
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w600, fontSize: 20, color: Colors.black),
+                overflow: TextOverflow.ellipsis,
               ),
-              Expanded(
-                child: Text(
-                  widget.namaSantri,
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 20,
-                    color: Colors.black,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFFF8F9FF),
-                Color(0xFFE8EEFF),
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 12),
+          _buildTabBar(),
+          const SizedBox(height: 8),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildUangMasukTab(),
+                _buildUangKeluarTab(),
               ],
             ),
           ),
-          child: Column(
-            children: [ 
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF8B5CF6),
-                        Color(0xFF3B82F6),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF667EEA).withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Card(
-                    elevation: 0,
-                    color: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                      child: TabBar(
-                        controller: _tabController,
-                        indicator: BoxDecoration(
-                          color: Colors.white.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(15),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.2),
-                              blurRadius: 10,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        indicatorSize: TabBarIndicatorSize.tab,
-                        indicatorPadding: const EdgeInsets.all(4),
-                        labelColor: Colors.white,
-                        unselectedLabelColor: Colors.white.withOpacity(0.7),
-                        labelStyle: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                        unselectedLabelStyle: GoogleFonts.poppins(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
-                        ),
-                        tabs: const [
-                          Tab(text: 'Uang Masuk'),
-                          Tab(text: 'Uang Keluar'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabBar() {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: TabBar(
+          controller: _tabController,
+          indicator: BoxDecoration(
+            color: Colors.white.withOpacity(0.25),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          tabs: const [
+            Tab(text: "Uang Masuk"),
+            Tab(text: "Uang Keluar"),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUangMasukTab() {
+    return FutureBuilder<DetailSakuResponse>(
+      future: futureUangMasuk,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text("Terjadi kesalahan: ${snapshot.error}"));
+        }
+        final dataMap = snapshot.data?.dataUangMasuk;
+        if (dataMap == null || dataMap.isEmpty) {
+          return const Center(child: Text("Tidak ada data uang masuk"));
+        }
+
+        final tahun = dataMap.keys.last;
+        final bulanMap = dataMap[tahun] ?? {};
+        final bulanList = bulanMap.keys.toList()
+          ..sort((a, b) => _monthOrder(b).compareTo(_monthOrder(a)));
+
+        expandedMonthMasuk ??= bulanList.first;
+
+        return RefreshIndicator(
+          onRefresh: () async => _refreshData(),
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return ListView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: bulanList.length,
+                itemBuilder: (context, index) {
+                  final bulan = bulanList[index];
+                  final transaksi = bulanMap[bulan] ?? [];
+                  final isExpanded = expandedMonthMasuk == bulan;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.15),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
                         ],
                       ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildUangMasukTab(),
-                    _buildUangKeluarTab(),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    Widget _buildUangMasukTab() {
-      return FutureBuilder<DetailSakuResponse>(
-        future: futureUangMasuk,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Terjadi kesalahan',
-                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '${snapshot.error}',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(fontSize: 14, color: Colors.grey[700]),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          } else if (!snapshot.hasData ||
-              snapshot.data!.dataUangMasuk == null ||
-              snapshot.data!.dataUangMasuk!.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.account_balance_wallet_outlined, size: 48, color: Colors.grey),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Tidak ada data uang masuk',
-                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          final data = snapshot.data!;
-          final uangMasukList = data.dataUangMasuk!;
-
-          return RefreshIndicator(
-            onRefresh: () async {
-              _refreshData();
-            },
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              itemCount: uangMasukList.length,
-              itemBuilder: (context, index) {
-                final uangMasuk = uangMasukList[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 1.5,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                uangMasuk.uangAsal,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey[800],
+                      child: Column(
+                        children: [
+                          // Header yang bisa diklik
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  expandedMonthMasuk =
+                                      isExpanded ? null : bulan;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 16, horizontal: 16),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        "$bulan $tahun",
+                                        style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "${transaksi.length} transaksi",
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        AnimatedRotation(
+                                          turns: isExpanded ? 0.5 : 0,
+                                          duration:
+                                              const Duration(milliseconds: 200),
+                                          child: Icon(
+                                            Icons.keyboard_arrow_down,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-                            Text(
-                              currencyFormat.format(uangMasuk.jumlahMasuk),
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[800],
+                          ),
+                          // Body yang bisa expand
+                          AnimatedCrossFade(
+                            firstChild: const SizedBox.shrink(),
+                            secondChild: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey[50],
+                                borderRadius: const BorderRadius.only(
+                                  bottomLeft: Radius.circular(12),
+                                  bottomRight: Radius.circular(12),
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  const Divider(height: 1),
+                                  ListView.separated(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8),
+                                    itemCount: transaksi.length,
+                                    separatorBuilder: (context, index) =>
+                                        Divider(
+                                      height: 1,
+                                      indent: 16,
+                                      endIndent: 16,
+                                      color: Colors.grey[300],
+                                    ),
+                                    itemBuilder: (context, idx) {
+                                      final item = transaksi[idx];
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 12),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: Colors.green
+                                                    .withOpacity(0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: const Icon(
+                                                Icons.arrow_downward,
+                                                color: Colors.green,
+                                                size: 20,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    item.uangAsal,
+                                                    style: GoogleFonts.poppins(
+                                                      fontWeight: FontWeight.w600,
+                                                      fontSize: 14,
+                                                      color: Colors.black87,
+                                                    ),
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    item.tanggalTransaksi,
+                                                    style: GoogleFonts.poppins(
+                                                      fontSize: 12,
+                                                      color: Colors.grey[600],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              currencyFormat
+                                                  .format(item.jumlahMasuk),
+                                              style: GoogleFonts.poppins(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                                color: Colors.green,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        Row(
-                          children: [
-                            const Icon(Icons.calendar_today_outlined, size: 16, color: Colors.grey),
-                            const SizedBox(width: 6),
-                            Text(
-                              _formatDate(uangMasuk.tanggalTransaksi),
-                              style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[600]),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          );
-        },
-      );
-    }
-
-
-
-    Widget _buildUangKeluarTab() {
-      return FutureBuilder<DetailSakuResponse>(
-        future: futureUangKeluar,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Terjadi kesalahan',
-                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${snapshot.error}',
-                      style: GoogleFonts.poppins(fontSize: 13, color: Colors.grey[700]),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          } else if (!snapshot.hasData ||
-              snapshot.data!.dataUangKeluar == null ||
-              snapshot.data!.dataUangKeluar!.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.money_off_outlined, size: 48, color: Colors.grey),
-                    const SizedBox(height: 10),
-                    Text(
-                      'Tidak ada data uang keluar',
-                      style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          final data = snapshot.data!;
-          final uangKeluarList = data.dataUangKeluar!;
-          return RefreshIndicator(
-            onRefresh: () async => _refreshData(),
-            child: ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: uangKeluarList.length,
-              itemBuilder: (context, index) {
-                final uangKeluar = uangKeluarList[index];
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    border: Border.all(color: Colors.grey.shade300),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: ListTile(
-                    title: Text(
-                      uangKeluar.catatan,
-                      style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 4),
-                        Text(
-                          'Tanggal: ${_formatDate(uangKeluar.tanggalTransaksi)}',
-                          style: GoogleFonts.poppins(fontSize: 13),
-                        ),
-                        Text(
-                          'Petugas: ${uangKeluar.namaMurroby}',
-                          style: GoogleFonts.poppins(fontSize: 13),
-                        ),
-                      ],
-                    ),
-                    trailing: Text(
-                      currencyFormat.format(uangKeluar.jumlahKeluar),
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.redAccent,
+                            crossFadeState: isExpanded
+                                ? CrossFadeState.showSecond
+                                : CrossFadeState.showFirst,
+                            duration: const Duration(milliseconds: 200),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                );
-              },
-            ),
-          );
-        },
-      );
-    }
-
-
-
-    String _formatDate(String dateString) {
-      try {
-        final date = DateTime.parse(dateString);
-        return DateFormat('dd MMMM yyyy', 'id_ID').format(date);
-      } catch (e) {
-        return dateString;
-      }
-    }
+                  );
+                },
+              );
+            },
+          ),
+        );
+      },
+    );
   }
+
+  Widget _buildUangKeluarTab() {
+    return FutureBuilder<DetailSakuResponse>(
+      future: futureUangKeluar,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text("Terjadi kesalahan: ${snapshot.error}"));
+        }
+        final dataMap = snapshot.data?.dataUangKeluar;
+        if (dataMap == null || dataMap.isEmpty) {
+          return const Center(child: Text("Tidak ada data uang keluar"));
+        }
+
+        final tahun = dataMap.keys.last;
+        final bulanMap = dataMap[tahun] ?? {};
+        final bulanList = bulanMap.keys.toList()
+          ..sort((a, b) => _monthOrder(b).compareTo(_monthOrder(a)));
+
+        expandedMonthKeluar ??= bulanList.first;
+
+        return RefreshIndicator(
+          onRefresh: () async => _refreshData(),
+          child: StatefulBuilder(
+            builder: (context, setState) {
+              return ListView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: bulanList.length,
+                itemBuilder: (context, index) {
+                  final bulan = bulanList[index];
+                  final transaksi = bulanMap[bulan] ?? [];
+                  final isExpanded = expandedMonthKeluar == bulan;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.15),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          // Header yang bisa diklik
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                setState(() {
+                                  expandedMonthKeluar =
+                                      isExpanded ? null : bulan;
+                                });
+                              },
+                              borderRadius: BorderRadius.circular(12),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 16, horizontal: 16),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        "$bulan $tahun",
+                                        style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          "${transaksi.length} transaksi",
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        AnimatedRotation(
+                                          turns: isExpanded ? 0.5 : 0,
+                                          duration:
+                                              const Duration(milliseconds: 200),
+                                          child: Icon(
+                                            Icons.keyboard_arrow_down,
+                                            color: Colors.grey[700],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          // Body yang bisa expand
+                          AnimatedCrossFade(
+                            firstChild: const SizedBox.shrink(),
+                            secondChild: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey[50],
+                                borderRadius: const BorderRadius.only(
+                                  bottomLeft: Radius.circular(12),
+                                  bottomRight: Radius.circular(12),
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  const Divider(height: 1),
+                                  ListView.separated(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8),
+                                    itemCount: transaksi.length,
+                                    separatorBuilder: (context, index) =>
+                                        Divider(
+                                      height: 1,
+                                      indent: 16,
+                                      endIndent: 16,
+                                      color: Colors.grey[300],
+                                    ),
+                                    itemBuilder: (context, idx) {
+                                      final item = transaksi[idx];
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 12),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Container(
+                                              padding: const EdgeInsets.all(8),
+                                              decoration: BoxDecoration(
+                                                color: Colors.red
+                                                    .withOpacity(0.1),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: const Icon(
+                                                Icons.arrow_upward,
+                                                color: Colors.redAccent,
+                                                size: 20,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    item.catatan,
+                                                    style: GoogleFonts.poppins(
+                                                      fontWeight: FontWeight.w600,
+                                                      fontSize: 14,
+                                                      color: Colors.black87,
+                                                    ),
+                                                    maxLines: 2,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  Text(
+                                                    item.tanggalTransaksi,
+                                                    style: GoogleFonts.poppins(
+                                                      fontSize: 12,
+                                                      color: Colors.grey[600],
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 2),
+                                                  Text(
+                                                    "Petugas: ${item.namaMurroby}",
+                                                    style: GoogleFonts.poppins(
+                                                      fontSize: 11,
+                                                      color: Colors.grey[500],
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Text(
+                                              currencyFormat
+                                                  .format(item.jumlahKeluar),
+                                              style: GoogleFonts.poppins(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                                color: Colors.redAccent,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            crossFadeState: isExpanded
+                                ? CrossFadeState.showSecond
+                                : CrossFadeState.showFirst,
+                            duration: const Duration(milliseconds: 200),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
