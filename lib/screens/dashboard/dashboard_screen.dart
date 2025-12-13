@@ -67,8 +67,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 'V1.1.9',
                 style: GoogleFonts.poppins(
                   fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black54,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
               ),
             ),
@@ -120,7 +120,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           
           _buildMurrobyProfileCard(murroby),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           _buildSummaryCards(santriList),
           MenuIkonWidget(),
           _buildLogoutButton(context),
@@ -169,8 +169,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           onTap: () async {
             final scaffold = ScaffoldMessenger.of(context);
-            
-            // Show loading dialog
             showDialog(
               context: context,
               barrierDismissible: false,
@@ -178,23 +176,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
             );
 
             try {
-              // Call logout service
               final result = await LoginService.logout();
-              
-              // Clear session data
               await SessionManager.clearSession();
-              
-              // Close loading dialog
               Navigator.of(context).pop();
-              
-              // Navigate to login screen
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => LoginScreenMurroby()),
                 (route) => false,
               );
-              
-              // Show success message
               scaffold.showSnackBar(
                 SnackBar(
                   content: Text(result['message'] ?? 'Logout berhasil'),
@@ -202,10 +191,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               );
             } catch (e) {
-              // Close loading dialog on error
               Navigator.of(context).pop();
-              
-              // Show error message
               scaffold.showSnackBar(
                 SnackBar(
                   content: Text('Gagal logout: ${e.toString()}'),
