@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'dashboard/dashboard_screen.dart';
 import '../services/login_service.dart';
 import '../utils/session_manager.dart';
@@ -16,12 +17,6 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby> {
   bool _obscurePassword = true;
 
   @override
-  void initState() {
-    super.initState();
-    
-  }
-
-  @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
@@ -31,81 +26,83 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, 
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, 
-        children: [
-          Center(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.all(24.0),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 32),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo
                   Image.asset(
                     'assets/images/logo.png',
-                    height: 100,
-                    width: 100,
+                    height: 140,
+                    width: 140,
                   ),
-                  SizedBox(height: 20),
-                  // Title
+                  const SizedBox(height: 16),
                   Text(
                     'PPATQ Raudlatul Falah - Pati',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF00695C),
-                    ),
                     textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF00695C),
+                    ),
                   ),
-                  SizedBox(height: 8),
                   Text(
-                    'Selamat Datang',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF00695C),
-                    ),
+                    'Akses Murroby',
                     textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Silahkan Login Sebagai Murroby',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                      letterSpacing: 1.2,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF00695C),
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 40),
-                  // Form Container
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
+                ],
+              ),
+            ),
+
+            /// ================= FORM (CENTER) =================
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Card(
                     elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     child: Padding(
-                      padding: EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(24),
                       child: Form(
                         key: _formKey,
                         child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
+                            Text(
+                              'Selamat Datang',
+                              style: GoogleFonts.poppins(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF00695C),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
                             _buildTextField(
                               controller: emailController,
                               label: 'Email',
                               icon: Icons.email_outlined,
                               keyboardType: TextInputType.emailAddress,
                             ),
-                            SizedBox(height: 20),
+                            const SizedBox(height: 20),
                             _buildTextField(
                               controller: passwordController,
                               label: 'Password',
                               icon: Icons.lock_outline,
                               isPassword: true,
                             ),
-                            SizedBox(height: 24),
-                            Container(
+                            const SizedBox(height: 28),
+                            SizedBox(
                               width: double.infinity,
                               height: 50,
                               child: ElevatedButton(
@@ -114,7 +111,9 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby> {
                                     showDialog(
                                       context: context,
                                       barrierDismissible: false,
-                                      builder: (_) => Center(child: CircularProgressIndicator()),
+                                      builder: (_) => const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
                                     );
 
                                     final result = await LoginService.login(
@@ -135,33 +134,37 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby> {
                                         expiresIn: murrobyData.expiresIn,
                                       );
 
-
                                       Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => DashboardScreen(),
+                                          builder: (_) => DashboardScreen(),
                                         ),
                                       );
                                     } else {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text(result['message'])),
+                                        SnackBar(
+                                          content: Text(
+                                            result['message'] ?? '',
+                                            style: GoogleFonts.poppins(),
+                                          ),
+                                        ),
                                       );
                                     }
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xFF00695C),
+                                  backgroundColor: const Color(0xFF00695C),
                                   foregroundColor: Colors.white,
-                                  elevation: 8,
+                                  elevation: 6,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15),
+                                    borderRadius: BorderRadius.circular(14),
                                   ),
                                 ),
                                 child: Text(
                                   'Masuk',
-                                  style: TextStyle(
+                                  style: GoogleFonts.poppins(
                                     fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ),
@@ -171,23 +174,25 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby> {
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: Text(
-              'BETA VERSION-V1.1.9',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey.shade500,
-                letterSpacing: 1.2,
+
+            /// ================= FOOTER =================
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Text(
+                'VERSION-1.1.9',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey.shade500,
+                  letterSpacing: 1.2,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -203,7 +208,10 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby> {
       controller: controller,
       keyboardType: keyboardType,
       obscureText: isPassword ? _obscurePassword : false,
-      style: TextStyle(color: Colors.black),
+      style: GoogleFonts.poppins(
+        fontSize: 14,
+        color: Colors.black,
+      ),
       validator: (value) {
         if (value == null || value.isEmpty) {
           return 'Harap isi $label';
@@ -212,36 +220,27 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby> {
       },
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.grey),
-        prefixIcon: Icon(icon, color: Color(0xFF00695C)),
+        labelStyle: GoogleFonts.poppins(),
+        prefixIcon: Icon(icon, color: const Color(0xFF00695C)),
         filled: true,
         fillColor: Colors.grey[200],
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderRadius: BorderRadius.circular(14),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Color(0xFF00695C), width: 2),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: const BorderSide(
+            color: Color(0xFF00695C),
+            width: 2,
+          ),
         ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Colors.red.withOpacity(0.8)),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: BorderSide(color: Colors.red, width: 2),
-        ),
-        errorStyle: TextStyle(color: Colors.red.shade200),
         suffixIcon: isPassword
             ? IconButton(
                 icon: Icon(
-                  _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                  color: Color(0xFF00695C),
+                  _obscurePassword
+                      ? Icons.visibility
+                      : Icons.visibility_off,
+                  color: const Color(0xFF00695C),
                 ),
                 onPressed: () {
                   setState(() {
