@@ -2,8 +2,8 @@ class DetailSakuResponse {
   final int status;
   final String message;
   final DataSantri? dataSantri;
-  final Map<String, Map<String, List<UangMasuk>>>? dataUangMasuk; // Tahun -> Bulan -> List
-  final Map<String, Map<String, List<UangKeluar>>>? dataUangKeluar; // Tahun -> Bulan -> List
+  final Map<String, Map<String, List<UangMasuk>>>? dataUangMasuk; 
+  final Map<String, Map<String, List<UangKeluar>>>? dataUangKeluar; 
 
   DetailSakuResponse({
     required this.status,
