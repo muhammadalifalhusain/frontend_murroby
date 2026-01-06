@@ -16,7 +16,10 @@ class TambahUangKeluarScreen extends StatefulWidget {
 class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
     with TickerProviderStateMixin {
   List<Santri> _santriList = [];
-  Santri? _selectedSantri;
+  List<Santri> _selectedSantri = [];
+
+  bool _allKamar = false;
+
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _jumlahController = TextEditingController();
@@ -25,7 +28,6 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
 
   bool _isLoading = false;
   bool _isLoadingSantri = true;
-  bool _allKamar = false;
   int? _idUser;
 
   late AnimationController _animationController;
@@ -111,14 +113,59 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
     );
   }
 
+  void _openSantriMultiSelect() async {
+    final tempSelected = List<Santri>.from(_selectedSantri);
+
+    await showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: Text('Pilih Santri', style: GoogleFonts.poppins()),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView(
+              children: _santriList.map((santri) {
+                final isSelected = tempSelected.contains(santri);
+                return CheckboxListTile(
+                  value: isSelected,
+                  title: Text(santri.namaSantri),
+                  onChanged: (val) {
+                    if (val == true) {
+                      tempSelected.add(santri);
+                    } else {
+                      tempSelected.remove(santri);
+                    }
+                    (context as Element).markNeedsBuild();
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                setState(() => _selectedSantri = tempSelected);
+                Navigator.pop(context);
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   Future<void> _submit() async {
-  // Validasi pemilihan santri jika allKamar tidak dipilih
-    if (!_allKamar && _selectedSantri == null) {
+    if (!_allKamar && _selectedSantri.isEmpty) {
       _showErrorSnackBar("Santri harus dipilih!");
       return;
     }
 
-    // Validasi form dan pemilihan tanggal
     if (!_formKey.currentState!.validate() || _selectedDate == null) {
       if (_selectedDate == null) {
         _showErrorSnackBar("Tanggal harus dipilih!");
@@ -126,49 +173,41 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
       return;
     }
 
-    // Tampilkan dialog konfirmasi
     final confirmed = await _showConfirmationDialog();
     if (!confirmed) return;
 
     setState(() => _isLoading = true);
 
     try {
-      // Ambil dan bersihkan input jumlah
       final raw = _jumlahController.text;
       final cleaned = raw.replaceAll(RegExp(r'[^0-9]'), '');
       final jumlah = int.tryParse(cleaned);
 
-      // Debug print untuk melihat nilai rawText, cleanedText, dan jumlah
-      print("Raw Text: $raw");
-      print("Cleaned Text: $cleaned");
-      print("Jumlah: $jumlah");
-
-      // Validasi jumlah
       if (jumlah == null || jumlah <= 0) {
         _showErrorSnackBar("Jumlah harus berupa angka positif!");
         return;
       }
 
-      // Kirim data ke service
       final result = await DetailSakuService.postUangKeluar(
         jumlah: jumlah,
         catatan: _catatanController.text,
         tanggal: DateFormat('yyyy-MM-dd').format(_selectedDate!),
         allKamar: _allKamar,
-        noInduk: _allKamar ? null : _selectedSantri!.noIndukSantri,
+        selectedSantri: !_allKamar
+            ? _selectedSantri.map((e) => e.noIndukSantri).toList()
+            : null,
       );
 
-      // Tampilkan pesan sukses dan kembali ke halaman sebelumnya
       if (mounted) {
         _showSuccessSnackBar(result);
         Navigator.pop(context, true);
       }
     } catch (e) {
-      // Tampilkan pesan kesalahan jika terjadi
       _showErrorSnackBar("Terjadi kesalahan: ${e.toString()}");
     } finally {
-      // Set loading state ke false
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -213,7 +252,12 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
               },
             )
             else
-            _buildConfirmationItem('Santri', _selectedSantri?.namaSantri ?? ''),
+            _buildConfirmationItem(
+              'Santri',
+              _allKamar
+                  ? 'Semua santri dalam kamar'
+                  : _selectedSantri.map((e) => e.namaSantri).join(', '),
+            ),
             _buildConfirmationItem(
               'Jumlah',
               'Rp ${NumberFormat('#,##0', 'id').format(
@@ -410,7 +454,9 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
               onChanged: (val) {
                 setState(() {
                   _allKamar = val;
-                  if (val) _selectedSantri = null;
+                  if (val) {
+                    _selectedSantri.clear();
+                  }
                 });
               },
               activeColor: Colors.red.shade600,
@@ -422,67 +468,62 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
     );
   }
 
-  Widget _buildSantriDropdown() {
-    return Container(
-      decoration: BoxDecoration(
-        color: _allKamar ? Colors.grey.shade100 : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: _allKamar ? [] : [
-          BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: DropdownButtonFormField<Santri>(
-        value: _selectedSantri,
-        decoration: InputDecoration(
-          labelText: 'Pilih Santri',
-          labelStyle: GoogleFonts.poppins(
-            color: _allKamar ? Colors.grey.shade400 : Colors.grey.shade600,
-          ),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-          filled: true,
-          fillColor: _allKamar ? Colors.grey.shade100 : Colors.white,
-          prefixIcon: Container(
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: _allKamar ? Colors.grey.shade200 : Colors.red.shade100,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              Icons.person,
-              color: _allKamar ? Colors.grey.shade400 : Colors.red.shade600,
-              size: 20,
-            ),
-          ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+  Widget _buildSantriSelector() {
+    return GestureDetector(
+      onTap: _allKamar ? null : _openSantriMultiSelect,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: _allKamar ? Colors.grey.shade100 : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: _allKamar
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.grey.shade200,
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
-        items: _santriList.map((santri) {
-          return DropdownMenuItem<Santri>(
-            value: santri,
-            child: Text(
-              santri.namaSantri,
-              style: GoogleFonts.poppins(fontSize: 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Pilih Santri',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: _allKamar ? Colors.grey : Colors.grey.shade600,
+              ),
             ),
-          );
-        }).toList(),
-        onChanged: _allKamar ? null : (val) => setState(() => _selectedSantri = val),
-        validator: (val) => _allKamar ? null : (val == null ? 'Santri harus dipilih' : null),
-        dropdownColor: Colors.white,
-        icon: Icon(Icons.arrow_drop_down, color: Colors.grey.shade400),
-        style: GoogleFonts.poppins(
-          fontSize: 14,
-          color: _allKamar ? Colors.grey.shade400 : Colors.grey.shade800,
+            const SizedBox(height: 8),
+            _selectedSantri.isEmpty
+                ? Text(
+                    'Tap untuk memilih santri',
+                    style: GoogleFonts.poppins(color: Colors.grey),
+                  )
+                : Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _selectedSantri.map((santri) {
+                      return Chip(
+                        label: Text(santri.namaSantri),
+                        onDeleted: _allKamar
+                            ? null
+                            : () {
+                                setState(() {
+                                  _selectedSantri.remove(santri);
+                                });
+                              },
+                      );
+                    }).toList(),
+                  ),
+          ],
         ),
       ),
     );
   }
+
 
   Widget _buildJumlahField() {
     return Container(
@@ -783,7 +824,7 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
                               const SizedBox(height: 13),
                               _buildAllKamarSwitch(),
                               const SizedBox(height: 16),
-                              _buildSantriDropdown(),
+                              _buildSantriSelector(),
                               const SizedBox(height: 14),
                               _buildJumlahField(),
                               const SizedBox(height: 14),

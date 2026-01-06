@@ -61,8 +61,6 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby> {
                 ],
               ),
             ),
-
-            /// ================= FORM (CENTER) =================
             Expanded(
               child: Center(
                 child: SingleChildScrollView(
@@ -177,8 +175,6 @@ class _LoginScreenMurrobyState extends State<LoginScreenMurroby> {
                 ),
               ),
             ),
-
-            /// ================= FOOTER =================
             Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: Text(
