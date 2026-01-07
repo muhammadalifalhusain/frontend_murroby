@@ -122,52 +122,120 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               title: Text(
                 'Pilih Santri',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
               ),
               content: SizedBox(
                 width: double.maxFinite,
-                child: ListView.builder(
+                child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: _santriList.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
                   itemBuilder: (context, index) {
                     final santri = _santriList[index];
                     final isSelected = tempSelected.contains(santri);
 
-                    return CheckboxListTile(
-                      value: isSelected,
-                      title: Text(
-                        santri.namaSantri,
-                        style: GoogleFonts.poppins(fontSize: 14),
-                      ),
-                      controlAffinity: ListTileControlAffinity.leading,
-                      onChanged: (checked) {
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () {
                         setStateDialog(() {
-                          if (checked == true) {
-                            tempSelected.add(santri);
-                          } else {
-                            tempSelected.remove(santri);
-                          }
+                          isSelected
+                              ? tempSelected.remove(santri)
+                              : tempSelected.add(santri);
                         });
                       },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Colors.red.shade50
+                              : Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isSelected
+                                ? Colors.red.shade300
+                                : Colors.grey.shade200,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                santri.namaSantri,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.grey.shade800,
+                                ),
+                              ),
+                            ),
+                            Checkbox(
+                              value: isSelected,
+                              activeColor: Colors.red.shade600,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              onChanged: (checked) {
+                                setStateDialog(() {
+                                  checked == true
+                                      ? tempSelected.add(santri)
+                                      : tempSelected.remove(santri);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 ),
               ),
+              actionsPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Batal'),
+                  child: Text(
+                    'Batal',
+                    style: GoogleFonts.poppins(
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
                 ),
                 ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.shade600,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                  ),
                   onPressed: () {
                     setState(() {
                       _selectedSantri = tempSelected;
                     });
                     Navigator.pop(context);
                   },
-                  child: const Text('Simpan'),
+                  child: Text(
+                    'Simpan',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ],
             );
@@ -176,6 +244,7 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
       },
     );
   }
+
 
   Future<void> _submit() async {
     if (!_allKamar && _selectedSantri.isEmpty) {
@@ -419,13 +488,6 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -485,61 +547,64 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
     );
   }
 
-    Widget _buildSantriDropdown() {
-      return GestureDetector(
-        onTap: _allKamar ? null : _openSantriMultiSelect,
-        child: Container(
-          decoration: BoxDecoration(
-            color: _allKamar ? Colors.grey.shade100 : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: _allKamar
-                ? []
-                : [
-                    BoxShadow(
-                      color: Colors.grey.shade200,
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-          ),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Pilih Santri',
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: _allKamar ? Colors.grey.shade400 : Colors.grey.shade600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              _selectedSantri.isEmpty
-                  ? Text(
-                      'Tap untuk memilih santri',
-                      style: GoogleFonts.poppins(color: Colors.grey),
-                    )
-                  : Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: _selectedSantri.map((santri) {
-                        return Chip(
-                          label: Text(santri.namaSantri),
-                          onDeleted: _allKamar
-                              ? null
-                              : () {
-                                  setState(() {
-                                    _selectedSantri.remove(santri);
-                                  });
-                                },
-                        );
-                      }).toList(),
-                    ),
-            ],
-          ),
+  Widget _buildSantriDropdown() {
+    return GestureDetector(
+      onTap: _allKamar ? null : _openSantriMultiSelect,
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: _allKamar ? Colors.grey.shade100 : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: _allKamar
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.grey.shade200,
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
-      );
-    }
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Pilih Santri',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color:
+                    _allKamar ? Colors.grey.shade400 : Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            _selectedSantri.isEmpty
+                ? Text(
+                    'Tap untuk memilih santri',
+                    style: GoogleFonts.poppins(color: Colors.grey),
+                  )
+                : Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: _selectedSantri.map((santri) {
+                      return Chip(
+                        label: Text(santri.namaSantri),
+                        onDeleted: _allKamar
+                            ? null
+                            : () {
+                                setState(() {
+                                  _selectedSantri.remove(santri);
+                                });
+                              },
+                      );
+                    }).toList(),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   Widget _buildJumlahField() {
     return Container(
@@ -735,13 +800,7 @@ class _TambahUangKeluarScreenState extends State<TambahUangKeluarScreen>
           colors: [Colors.red.shade400, Colors.red.shade600],
         ),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.red.shade300,
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
+  
       ),
       child: ElevatedButton(
         onPressed: _isLoading ? null : _submit,
