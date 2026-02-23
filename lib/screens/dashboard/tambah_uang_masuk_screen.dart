@@ -113,7 +113,6 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
         _selectedDate != null &&
         _selectedDari != null) {
       
-      // Show confirmation dialog
       final confirmed = await _showConfirmationDialog();
       if (!confirmed) return;
 
@@ -122,17 +121,15 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
       try {
         final raw = _jumlahController.text;
         final cleaned = raw.replaceAll(RegExp(r'[^0-9]'), '');
-        final jumlah = int.tryParse(cleaned);
-
-        // Debug print untuk melihat nilai rawText, cleanedText, dan jumlah
-        print("Raw Text: $raw");
-        print("Cleaned Text: $cleaned");
-        print("Jumlah: $jumlah");
+        int? jumlah = int.tryParse(cleaned);
+        if (jumlah != null && _selectedDari == 4) {
+          jumlah = -jumlah;
+        }
 
         final result = await DetailSakuService.postUangMasuk(
           noInduk: _selectedSantri!.noIndukSantri,
           dari: _selectedDari.toString(),
-          jumlah: jumlah!,
+          jumlah: jumlah ?? 0,
           tanggal: DateFormat('yyyy-MM-dd').format(_selectedDate!),
         );
 
@@ -149,6 +146,8 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
   }
 
   Future<bool> _showConfirmationDialog() async {
+    bool isHutang = _selectedDari == 4; 
+
     return await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -158,10 +157,13 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.green.shade100,
+                color: isHutang ? Colors.red.shade100 : Colors.green.shade100,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(Icons.help_outline, color: Colors.green.shade600),
+              child: Icon(
+                isHutang ? Icons.warning_amber_rounded : Icons.help_outline, 
+                color: isHutang ? Colors.red.shade600 : Colors.green.shade600
+              ),
             ),
             const SizedBox(width: 12),
             Text(
@@ -181,11 +183,12 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
             const SizedBox(height: 12),
             _buildConfirmationItem('Nama', _selectedSantri?.namaSantri ?? ''),
             _buildConfirmationItem(
-                'Jumlah',
-                'Rp ${NumberFormat('#,##0', 'id').format(
-                  int.parse(_jumlahController.text.replaceAll(RegExp(r'[^0-9]'), '')),
-                )}',
-              ),
+              'Jumlah',
+              '${isHutang ? "- " : ""}Rp ${NumberFormat('#,##0', 'id').format(
+                int.parse(_jumlahController.text.replaceAll(RegExp(r'[^0-9]'), '')),
+              )}',
+            ),
+            
             _buildConfirmationItem('Sumber', _getDariText(_selectedDari)),
             _buildConfirmationItem('Tanggal', DateFormat('dd MMMM yyyy', 'id').format(_selectedDate!)),
           ],
@@ -198,7 +201,7 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green.shade600,
+              backgroundColor: isHutang ? Colors.red.shade600 : Colors.green.shade600,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
             child: Text('Simpan', style: GoogleFonts.poppins(color: Colors.white)),
@@ -234,10 +237,18 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
 
   String _getDariText(int? dari) {
     switch (dari) {
-      case 1: return 'Uang Saku';
-      case 2: return 'Kunjungan Walsan';
-      case 3: return 'Sisa Bulan Kemarin';
-      default: return '';
+      case 3:
+        return 'Saldo Bulan Lalu';
+      case 4:
+        return 'Hutang (Saldo Minus)';
+      case 5:
+        return 'Bendahara';
+      case 2:
+        return 'Titipan Wali Santri';
+      case 1:
+        return 'Uang Saku';
+      default:
+        return '';
     }
   }
 
@@ -382,87 +393,126 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
   }
 
   Widget _buildJumlahField() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: TextFormField(
-        controller: _jumlahController,
-        keyboardType: TextInputType.number,
-        inputFormatters: [
-          FilteringTextInputFormatter.digitsOnly,
-          TextInputFormatter.withFunction((oldValue, newValue) {
-            String newText = newValue.text.replaceAll('.', '');
-            if (newText.isEmpty) return newValue;
+    bool isHutang = _selectedDari == 4;
 
-            final buffer = StringBuffer();
-            for (int i = 0; i < newText.length; i++) {
-              if (i != 0 && (newText.length - i) % 3 == 0) {
-                buffer.write('.');
-              }
-              buffer.write(newText[i]);
-            }
-
-            final formatted = buffer.toString();
-            return TextEditingValue(
-              text: formatted,
-              selection: TextSelection.collapsed(offset: formatted.length),
-            );
-          }),
-        ],
-        decoration: InputDecoration(
-          labelText: 'Tambahkan Jumlah',
-          labelStyle: GoogleFonts.poppins(color: Colors.grey.shade600),
-          hintText: 'Masukkan Jumlah Saku Masuk',
-          hintStyle: GoogleFonts.poppins(color: Colors.grey.shade400),
-          border: OutlineInputBorder(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.shade200,
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          filled: true,
-          fillColor: Colors.white,
-          prefixIcon: Container(
-            margin: const EdgeInsets.all(12),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.red.shade100,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(Icons.money_off, color: Colors.red.shade600, size: 20),
-          ),
-          prefixText: 'Rp ',
-          prefixStyle: GoogleFonts.poppins(
-            color: Colors.grey.shade700,
-            fontWeight: FontWeight.w500,
-          ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        ),
-        style: GoogleFonts.poppins(fontSize: 14),
-        validator: (val) {
-          if (val == null || val.isEmpty) return 'Jumlah wajib diisi';
+          child: TextFormField(
+            controller: _jumlahController,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              TextInputFormatter.withFunction((oldValue, newValue) {
+                String newText = newValue.text.replaceAll('.', '');
+                if (newText.isEmpty) return newValue;
 
-          final cleanValue = val.replaceAll('.', '');
-          final number = int.tryParse(cleanValue);
-          if (number == null || number <= 0) return 'Jumlah harus berupa angka positif';
-          return null;
-        },
-      ),
+                final buffer = StringBuffer();
+                for (int i = 0; i < newText.length; i++) {
+                  if (i != 0 && (newText.length - i) % 3 == 0) {
+                    buffer.write('.');
+                  }
+                  buffer.write(newText[i]);
+                }
+
+                final formatted = buffer.toString();
+                return TextEditingValue(
+                  text: formatted,
+                  selection: TextSelection.collapsed(offset: formatted.length),
+                );
+              }),
+            ],
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: isHutang ? Colors.red.shade700 : Colors.grey.shade800,
+            ),
+            onChanged: (val) => setState(() {}),
+            decoration: InputDecoration(
+              labelText: 'Jumlah Uang',
+              labelStyle: GoogleFonts.poppins(color: Colors.grey.shade600),
+              counter: isHutang 
+                  ? Text(
+                      'Cukup masukkan nominal angka, tanda minus otomatis ditambahkan.',
+                      style: GoogleFonts.poppins(color: Colors.red.shade600, fontSize: 11),
+                      softWrap: true,
+                    )
+                  : const SizedBox.shrink(),
+              prefixText: isHutang ? '- Rp ' : 'Rp ',
+              prefixStyle: GoogleFonts.poppins(
+                color: isHutang ? Colors.red.shade700 : Colors.grey.shade700,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              prefixIcon: Container(
+                margin: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isHutang ? Colors.red.shade100 : Colors.green.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.payments_rounded,
+                  color: isHutang ? Colors.red.shade600 : Colors.green.shade600,
+                  size: 20,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            ),
+            validator: (val) {
+              if (val == null || val.isEmpty) return 'Masukkan jumlah uang';
+              final cleanValue = val.replaceAll('.', '');
+              final number = int.tryParse(cleanValue);
+              if (number == null || number <= 0) return 'Jumlah tidak valid';
+              return null;
+            },
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildDariDropdown() {
     final sources = [
-      {'value': 1, 'text': 'Uang Saku', 'icon': Icons.account_balance_wallet},
-      {'value': 2, 'text': 'Kunjungan Walsan', 'icon': Icons.family_restroom},
-      {'value': 3, 'text': 'Sisa Bulan Kemarin', 'icon': Icons.savings},
+      {
+        'value': 3, 
+        'text': 'Saldo Bulan Lalu', 
+        'icon': Icons.history_rounded
+      },
+      {
+        'value': 4, 
+        'text': 'Hutang(Saldo Minus)', 
+        'icon': Icons.money_off_rounded 
+      },
+      {
+        'value': 5, 
+        'text': 'Bendahara', 
+        'icon': Icons.account_balance_rounded 
+      },
+      {
+        'value': 2, 
+        'text': 'Titipan Wali Santri', 
+        'icon': Icons.escalator_warning_rounded
+      },
+      // {'value': 1, 'text': 'Uang Saku', 'icon': Icons.account_balance_wallet},
     ];
 
     return Container(
@@ -604,13 +654,6 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
           colors: [Colors.green.shade400, Colors.green.shade600],
         ),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.green.shade300,
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
       ),
       child: ElevatedButton(
         onPressed: _isLoading ? null : _submit,
@@ -667,6 +710,12 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
+      bottomNavigationBar: _isLoadingSantri 
+          ? null 
+          : Padding(
+              padding: const EdgeInsets.only(left: 24, right: 24, bottom: 20, top: 10),
+              child: _buildSubmitButton(),
+            ),
       body: Column(
         children: [
           _buildHeader(),
@@ -692,7 +741,7 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
                     child: SlideTransition(
                       position: _slideAnimation,
                       child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
                         child: Form(
                           key: _formKey,
                           child: Column(
@@ -709,13 +758,11 @@ class _TambahUangMasukScreenState extends State<TambahUangMasukScreen>
                               const SizedBox(height: 13),
                               _buildSantriDropdown(),
                               const SizedBox(height: 16),
-                              _buildJumlahField(),
-                              const SizedBox(height: 16),
                               _buildDariDropdown(),
                               const SizedBox(height: 16),
+                              _buildJumlahField(),
+                              const SizedBox(height: 16),
                               _buildDatePicker(),
-                              const SizedBox(height: 20),
-                              _buildSubmitButton(),
                             ],
                           ),
                         ),
