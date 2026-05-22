@@ -7,7 +7,7 @@ import '../../models/dashboard_model.dart';
 import '../../widgets/menu_widget.dart';
 import '../../utils/session_manager.dart';
 import '../../services/login_service.dart';
-
+import '../login_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -32,10 +32,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
-  void _refreshData() {
-    setState(() {
-      _userDataFuture = _fetchUserData();
-    });
+  void _loginUlang(BuildContext context) {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>  LoginScreenMurroby(),
+      ),
+      (route) => false,
+    );
   }
 
    @override
@@ -652,7 +656,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ElevatedButton(
-                onPressed: _refreshData,
+                onPressed: () => _loginUlang(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   shadowColor: Colors.transparent,
@@ -661,7 +665,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                 ),
                 child: const Text(
-                  'Coba Lagi',
+                  'Kembali',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
