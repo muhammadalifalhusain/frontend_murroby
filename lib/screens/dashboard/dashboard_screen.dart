@@ -7,7 +7,8 @@ import '../../models/dashboard_model.dart';
 import '../../widgets/menu_widget.dart';
 import '../../utils/session_manager.dart';
 import '../../services/login_service.dart';
-import '../login_screen.dart';
+import '../../config/app_config.dart';
+
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -16,16 +17,28 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   late Future<UserDataResponse> _userDataFuture;
+  String _namaMurroby = '';
+  String _photo = '';
 
   @override
   void initState() {
     super.initState();
-    _userDataFuture = _fetchUserData();
+
+  _loadSession();
+  _userDataFuture = _fetchUserData();
+  }
+
+  Future<void> _loadSession() async {
+    _namaMurroby = await SessionManager.getNamaMurroby();
+    _photo = await SessionManager.getPhoto();
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<UserDataResponse> _fetchUserData() async {
     try {
-      await SharedPreferences.getInstance();
       return await ApiService.fetchUserData();
     } catch (e) {
       throw Exception('Gagal memuat data: ${e.toString()}');
@@ -49,16 +62,48 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false,
+        titleSpacing: 16,
         title: Row(
           children: [
-            const Icon(Icons.dashboard, color: Colors.black87),
-            const SizedBox(width: 6),
-            Text(
-              'Dashboard',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: Colors.grey.shade200,
+              backgroundImage: _photo.isNotEmpty
+                  ? NetworkImage(AppConfig.murrobyPhoto(_photo))
+                  : null,
+              child: _photo.isEmpty
+                  ? const Icon(
+                      Icons.person,
+                      color: Colors.grey,
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Selamat Datang',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  Text(
+                    _namaMurroby,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.green.shade700,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -67,19 +112,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Center(
-              child: Text(
-                'V1.1.11',
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
                 ),
-              ),
-            ),
+                child: Text(
+                  'V1.1.11',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.green.shade700,
+                  ),
           ),
-        ],
-        automaticallyImplyLeading: false,
+        ),
       ),
+    ),
+  ],
+),
 
       body: FutureBuilder<UserDataResponse>(
         future: _userDataFuture,
