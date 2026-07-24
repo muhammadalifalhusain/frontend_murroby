@@ -8,8 +8,8 @@ import '../../widgets/menu_widget.dart';
 import '../../utils/session_manager.dart';
 import '../../services/login_service.dart';
 import '../../config/app_config.dart';
-
-
+import '../../widgets/dashboard_bottom_bar.dart';
+import '../login_screen.dart';
 class DashboardScreen extends StatefulWidget {
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
@@ -56,9 +56,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
    @override
-   Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 230, 229, 229),
+
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -98,24 +99,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 5,
+              child: Text(
+                'V1.1.11',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.green.shade700,
                 ),
-                child: Text(
-                  'V1.1.11',
-                  style: GoogleFonts.poppins(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.green.shade700,
-                  ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
-    ),
-  ],
-),
 
       body: FutureBuilder<UserDataResponse>(
         future: _userDataFuture,
@@ -124,9 +119,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             return SizedBox(
               height: MediaQuery.of(context).size.height * 0.6,
               child: const Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667EEA)),
-                ),
+                child: CircularProgressIndicator(),
               ),
             );
           }
@@ -140,10 +133,62 @@ class _DashboardScreenState extends State<DashboardScreen> {
           }
 
           final userData = snapshot.data!;
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: _buildDashboardContent(userData),
           );
+        },
+      ),
+
+      // ================= FLOATING CAMERA =================
+
+      floatingActionButton: FloatingActionButton(
+        heroTag: "camera",
+        backgroundColor: const Color(0xFF2E7D32),
+        elevation: 8,
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => LoginScreenMurroby(),
+            ),
+          );
+        },
+        child: const Icon(
+          Icons.camera_alt_rounded,
+          color: Colors.white,
+        ),
+      ),
+
+      floatingActionButtonLocation:
+          FloatingActionButtonLocation.centerDocked,
+
+      // ================= BOTTOM BAR =================
+
+      bottomNavigationBar: DashboardBottomBar(
+        onDashboard: () {
+          // Sudah berada di Dashboard
+        },
+
+        onLogout: () async {
+          final result = await LoginService.logout();
+
+          if (result['success']) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (_) => LoginScreenMurroby(),
+              ),
+              (route) => false,
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result['message']),
+              ),
+            );
+          }
         },
       ),
     );
