@@ -66,20 +66,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         titleSpacing: 16,
         title: Row(
           children: [
-            CircleAvatar(
-              radius: 22,
-              backgroundColor: Colors.grey.shade200,
-              backgroundImage: _photo.isNotEmpty
-                  ? NetworkImage(AppConfig.murrobyPhoto(_photo))
-                  : null,
-              child: _photo.isEmpty
-                  ? const Icon(
-                      Icons.person,
-                      color: Colors.grey,
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,18 +154,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final santriList = userData.data.listSantri;
 
     return Padding(
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.all(2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          
-          _buildMurrobyProfileCard(murroby),
-          const SizedBox(height: 10),
-          _buildSummaryCards(santriList),
+          _buildMurrobyProfileCard(
+            murroby,
+            santriList,
+          ),
           MenuIkonWidget(),
+
           _buildLogoutButton(context),
+
+          const SizedBox(height: 8),
+
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
               'Santri Binaan',
               style: GoogleFonts.poppins(
@@ -189,7 +179,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
           ),
+
           const SizedBox(height: 8),
+
           _buildSantriList(santriList),
         ],
       ),
@@ -259,227 +251,142 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildMurrobyProfileCard(DataUser murroby) {
+  Widget _buildMurrobyProfileCard(
+    DataUser murroby,
+    List<Santri> santriList,
+  ) {
     return Container(
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF667EEA),
-            Color(0xFF764BA2),
+            Color(0xFF2E7D32),
+            Color(0xFF43A047),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF667EEA).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
-      child: Card(
-        elevation: 0,
-        color: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 4,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      radius: 45,
-                      backgroundColor: Colors.white,
-                      child: CircleAvatar(
-                        radius: 41,
-                        backgroundImage: NetworkImage(
-                          'https://manajemen.ppatq-rf.id/assets/img/upload/photo/${murroby.fotoMurroby}',
-                        ),
-                        onBackgroundImageError: (_, __) => null,
-                        child: murroby.fotoMurroby.isEmpty
-                            ? const Icon(
-                                Icons.person,
-                                size: 45,
-                                color: Color(0xFF667EEA),
-                              )
-                            : null,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      murroby.namaMurroby,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    _buildProfileInfoRow(
-                      Icons.home_rounded,
-                      murroby.alamatMurroby,
-                      Colors.white.withOpacity(0.9),
-                    ),
-                    _buildProfileInfoRow(
-                      Icons.meeting_room_rounded,
-                      'Kamar ${murroby.kodeKamar}',
-                      Colors.white.withOpacity(0.9),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileInfoRow(IconData icon, String text, Color color) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Icon(icon, size: 16, color: Colors.white),
-          ),
-          const SizedBox(width: 12),
-          Flexible(
-            child: Text(
-              text,
-              style: TextStyle(
-                color: color,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryCards(List<Santri> santriList) {
-  final calmColors = [
-      const Color.fromARGB(255, 81, 81, 215), 
-      const Color(0xFF78909C), 
-    ];
-
-    return Row(
-      children: [
-        _buildSummaryCard(
-          icon: Icons.people_rounded,
-          value: santriList.length.toString(),
-          label: 'Total Santri',
-          colors: calmColors,
-        ),
-        const SizedBox(width: 8),
-        _buildSummaryCard(
-          icon: Icons.school_rounded,
-          value: santriList.isNotEmpty ? santriList.first.kelasSantri : '-',
-          label: 'Kelas',
-          colors: calmColors,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSummaryCard({
-    required IconData icon,
-    required String value,
-    required String label,
-    required List<Color> colors,
-  }) {
-    return Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: colors,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: colors[0].withOpacity(0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Card(
-          elevation: 0,
-          color: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Column(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 3,
+                    ),
                   ),
-                  child: Icon(icon, color: Colors.white, size: 18),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                  child: CircleAvatar(
+                    radius: 38,
+                    backgroundColor: Colors.white,
+                    backgroundImage: murroby.fotoMurroby.isNotEmpty
+                        ? NetworkImage(
+                            AppConfig.murrobyPhoto(
+                              murroby.fotoMurroby,
+                            ),
+                          )
+                        : null,
+                    child: murroby.fotoMurroby.isEmpty
+                        ? const Icon(
+                            Icons.person,
+                            size: 40,
+                            color: Color(0xFF2E7D32),
+                          )
+                        : null,
                   ),
                 ),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                const SizedBox(width: 16),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        murroby.namaMurroby,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        murroby.alamatMurroby,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(.9),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
+
+            const SizedBox(height: 8),
+
+            Divider(
+              color: Colors.white.withOpacity(.35),
+              thickness: 1,
+            ),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildInfoItem(
+                  "Asrama",
+                  murroby.kodeKamar,
+                ),
+
+                _buildInfoItem(
+                  "Santri",
+                  santriList.length.toString(),
+                ),
+
+                _buildInfoItem(
+                  "Kelas",
+                  santriList.isNotEmpty
+                      ? santriList.first.kelasSantri
+                      : "-",
+                ),
+              ],
+            ),
+          ],
         ),
       ),
+    );
+  }
+  
+  Widget _buildInfoItem(
+    String title,
+    String value,
+  ) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            color: Colors.white.withOpacity(.75),
+            fontSize: 11,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
+        ),
+      ],
     );
   }
 
