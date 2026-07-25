@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:intl/date_symbol_data_local.dart'; // tambahkan ini
+import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/date_symbol_data_local.dart';
+
 import 'screens/splash_screen.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); 
+  WidgetsFlutterBinding.ensureInitialized();
 
-  await initializeDateFormatting('id_ID', null); 
+  await initializeDateFormatting('id_ID', null);
 
   runApp(const MyApp());
 }
@@ -18,6 +20,21 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'PPATQ RAUDLATUL FALAH',
+
+      theme: ThemeData(
+        useMaterial3: true,
+
+        textTheme: GoogleFonts.poppinsTextTheme(
+          Theme.of(context).textTheme,
+        ),
+
+        primarySwatch: Colors.green,
+
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2E7D32),
+        ),
+      ),
+
       home: SplashScreen(),
     );
   }
