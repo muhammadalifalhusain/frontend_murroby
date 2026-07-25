@@ -66,7 +66,6 @@ class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
           }
 
           final data = snapshot.data!;
-          final user = data.data.dataUser;
           final santriList = data.data.dataSantri;
 
           return SingleChildScrollView(
@@ -74,8 +73,6 @@ class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildUserInfoCard(user),
-                const SizedBox(height: 24),
                 _buildSantriListHeader(santriList.length),
                 const SizedBox(height: 16),
                 _buildSantriList(santriList),
@@ -83,124 +80,6 @@ class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildUserInfoCard(DataUser user) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF667EEA),
-            Color(0xFF764BA2),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF667EEA).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Card(
-        elevation: 0,
-        color: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 4,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 10,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      radius: 35,
-                      backgroundColor: Colors.white,
-                      child: CircleAvatar(
-                        radius: 31,
-                        backgroundImage: NetworkImage(
-                          'https://manajemen.ppatq-rf.id/assets/img/upload/photo/${user.fotoMurroby}',
-                        ),
-                        onBackgroundImageError: (_, __) => null,
-                        child: user.fotoMurroby.isEmpty
-                            ? const Icon(
-                                Icons.person,
-                                size: 35,
-                                color: Color(0xFF667EEA),
-                              )
-                            : null,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      user.namaMurroby,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Icon(
-                            Icons.meeting_room_rounded,
-                            size: 16,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Kamar: ${user.kodeKamar}',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

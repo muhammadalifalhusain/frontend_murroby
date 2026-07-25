@@ -68,7 +68,7 @@ class MenuIkonWidget extends StatelessWidget {
                         ),
                         _buildEnhancedMenuIkon(
                           Icons.health_and_safety_rounded,
-                          'Kesehatan',
+                          'Pemeriksaan',
                           'Status kesehatan',
                           const Color(0xFF2196F3),
                           () {

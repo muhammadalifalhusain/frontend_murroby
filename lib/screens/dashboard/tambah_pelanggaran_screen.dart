@@ -111,121 +111,206 @@ class _PostPelanggaranScreenState extends State<PostPelanggaranScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            IconButton(
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.black87,
+              ),
+              onPressed: () => Navigator.pop(context),
+              padding: const EdgeInsets.only(left: 8, right: 4),
+              constraints: const BoxConstraints(),
+            ),
+            Text(
+              isEditMode ? 'Edit Pelanggaran' : 'Tambah Pelanggaran',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ],
         ),
-        title: Text(isEditMode ? 'Edit Pelanggaran' : 'Tambah Pelanggaran'),
-        backgroundColor: Color(0xFF004e92),
-        foregroundColor: Colors.white,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              _buildSantriSearch(),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: tanggalController,
-                readOnly: true,
-                decoration: InputDecoration(
-                  labelText: 'Tanggal',
-                  prefixIcon: const Icon(Icons.calendar_today),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: const EdgeInsets.only(bottom: 20),
+              children: [
+                _buildSantriSearch(),
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: tanggalController,
+                  readOnly: true,
+                  decoration: InputDecoration(
+                    labelText: 'Tanggal',
+                    prefixIcon: const Icon(Icons.calendar_today),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onTap: () async {
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2100),
+                    );
+
+                    if (picked != null) {
+                      tanggalController.text =
+                          '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                    }
+                  },
+                  validator: (val) =>
+                      val!.isEmpty ? 'Tanggal wajib diisi' : null,
                 ),
-                onTap: () async {
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime(2100),
-                  );
-                  if (picked != null) {
-                    tanggalController.text =
-                        '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
-                  }
-                },
-                validator: (val) => val!.isEmpty ? 'Tanggal wajib diisi' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: jenisController,
-                decoration: InputDecoration(
-                  labelText: 'Jenis Pelanggaran',
-                  prefixIcon: const Icon(Icons.warning),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: jenisController,
+                  decoration: InputDecoration(
+                    labelText: 'Jenis Pelanggaran',
+                    prefixIcon: const Icon(Icons.warning),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  validator: (val) =>
+                      val!.isEmpty ? 'Jenis wajib diisi' : null,
                 ),
-                validator: (val) => val!.isEmpty ? 'Jenis wajib diisi' : null,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: selectedKategori,
-                decoration: InputDecoration(
-                  labelText: 'Kategori',
-                  prefixIcon: const Icon(Icons.category),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                items: const [
-                  DropdownMenuItem(value: '1', child: Text('Ringan')),
-                  DropdownMenuItem(value: '2', child: Text('Berat')),
-                ],
-                onChanged: (val) => setState(() => selectedKategori = val),
-                validator: (val) => val == null ? 'Pilih kategori' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: hukumanController,
-                decoration: InputDecoration(
-                  labelText: 'Hukuman',
-                  prefixIcon: const Icon(Icons.gavel),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                validator: (val) => val!.isEmpty ? 'Hukuman wajib diisi' : null,
-              ),
-              const SizedBox(height: 16),
-              Text('Bukti Pelanggaran (Opsional)', style: GoogleFonts.poppins(fontWeight: FontWeight.w500)),
-              const SizedBox(height: 8),
-              if (_pickedImage != null)
-                Column(
-                  children: [
-                    Image.file(_pickedImage!, height: 150),
-                    TextButton.icon(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      label: const Text('Hapus Gambar'),
-                      onPressed: () => setState(() => _pickedImage = null),
+
+                const SizedBox(height: 16),
+
+                DropdownButtonFormField<String>(
+                  value: selectedKategori,
+                  decoration: InputDecoration(
+                    labelText: 'Kategori',
+                    prefixIcon: const Icon(Icons.category),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: '1',
+                      child: Text('Ringan'),
+                    ),
+                    DropdownMenuItem(
+                      value: '2',
+                      child: Text('Berat'),
                     ),
                   ],
-                )
-              else
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: () => _pickImage(ImageSource.gallery),
-                      icon: const Icon(Icons.photo_library),
-                      label: const Text('Galeri'),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: () => _pickImage(ImageSource.camera),
-                      icon: const Icon(Icons.camera_alt),
-                      label: const Text('Kamera'),
-                    ),
-                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      selectedKategori = value;
+                    });
+                  },
+                  validator: (value) =>
+                      value == null ? 'Pilih kategori' : null,
                 ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                onPressed: _submit,
-                icon: const Icon(Icons.save),
-                label: Text(isEditMode ? 'Perbarui' : 'Simpan'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF004e92),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+
+                const SizedBox(height: 16),
+
+                TextFormField(
+                  controller: hukumanController,
+                  decoration: InputDecoration(
+                    labelText: 'Hukuman',
+                    prefixIcon: const Icon(Icons.gavel),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  validator: (val) =>
+                      val!.isEmpty ? 'Hukuman wajib diisi' : null,
+                ),
+
+                const SizedBox(height: 16),
+
+                Text(
+                  'Bukti Pelanggaran (Opsional)',
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                if (_pickedImage != null)
+                  Column(
+                    children: [
+                      Image.file(
+                        _pickedImage!,
+                        height: 150,
+                      ),
+                      TextButton.icon(
+                        onPressed: () {
+                          setState(() {
+                            _pickedImage = null;
+                          });
+                        },
+                        icon: const Icon(
+                          Icons.delete,
+                          color: Colors.red,
+                        ),
+                        label: const Text('Hapus Gambar'),
+                      ),
+                    ],
+                  )
+                else
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: () => _pickImage(ImageSource.gallery),
+                        icon: const Icon(Icons.photo_library),
+                        label: const Text('Galeri'),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () => _pickImage(ImageSource.camera),
+                        icon: const Icon(Icons.camera_alt),
+                        label: const Text('Kamera'),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          color: Colors.white,
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+          child: SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton.icon(
+              onPressed: _submit,
+              icon: const Icon(Icons.save),
+              label: Text(
+                isEditMode ? 'Perbarui' : 'Simpan',
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF43A047),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),

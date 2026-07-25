@@ -147,19 +147,28 @@ class _PelanggaranScreenState extends State<PelanggaranScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(  
-        backgroundColor: Color(0xFF004e92),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Pelanggaran',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-          ),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false, 
+        titleSpacing: 0, 
+        title: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
+              onPressed: () => Navigator.of(context).pop(),
+              padding: const EdgeInsets.only(left: 8, right: 4), 
+              constraints: const BoxConstraints(), 
+            ),
+            Text(
+              'Pelanggaran',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ],
         ),
       ),
       body: RefreshIndicator(
@@ -304,7 +313,7 @@ class _PelanggaranScreenState extends State<PelanggaranScreen> {
           );
           if (result == true) _loadPelanggaran();
         },
-        backgroundColor: const Color(0xFF004e92),
+        backgroundColor: const Color(0xFF43A047),
         label: Text(
           'Tambah',
           style: GoogleFonts.poppins(
