@@ -225,8 +225,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           MenuIkonWidget(),
 
-          const SizedBox(height: 8),
-
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text(
