@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../login_screen.dart';
 import '../../services/dashboard_service.dart';
@@ -9,7 +8,6 @@ import '../../utils/session_manager.dart';
 import '../../services/login_service.dart';
 import '../../config/app_config.dart';
 import '../../widgets/dashboard_bottom_bar.dart';
-import '../login_screen.dart';
 class DashboardScreen extends StatefulWidget {
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
@@ -397,100 +395,107 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildSantriCard(Santri santri) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.withOpacity(0.1)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      elevation: 0,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+
+            // Header
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Foto santri
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: const Color(0xFF667EEA).withOpacity(0.2),
-                          width: 2,
+
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: Colors.grey.shade200,
+                  backgroundImage: santri.fotoSantri.isNotEmpty
+                      ? NetworkImage(
+                          '${AppConfig.santriPhotoPath}/${santri.fotoSantri}',
+                        )
+                      : null,
+                  child: santri.fotoSantri.isEmpty
+                      ? const Icon(Icons.person, size: 20)
+                      : null,
+                ),
+
+                const SizedBox(width: 10),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+
+                      Text(
+                        santri.namaSantri,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(30),
-                        child: santri.fotoSantri.isNotEmpty
-                            ? Image.network(
-                                'https://manajemen.ppatq-rf.id/assets/img/upload/photo/${santri.fotoSantri}',
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return _buildDefaultAvatar();
-                                },
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return _buildLoadingAvatar();
-                                },
-                              )
-                            : _buildDefaultAvatar(),
+
+                      const SizedBox(height: 2),
+
+                      Text(
+                        'NIS : ${santri.noIndukSantri} • ${santri.kelasSantri}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
-                    ),
-                    
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  santri.namaSantri,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF2D3748),
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  'NIS : ${santri.noIndukSantri}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 12), 
-                _buildSantriInfoRow(Icons.school_rounded, 'Kelas ${santri.kelasSantri ?? 'Belum ditentukan'}'),
-                _buildSantriInfoRow(Icons.phone_rounded, santri.noHpSantri ?? 'Nomor tidak tersedia'),
-                _buildSantriInfoRow(Icons.location_on_rounded, santri.alamatLengkap ?? 'Alamat belum dilengkapi'),
               ],
+            ),
+
+            const SizedBox(height: 12),
+
+            _buildInfoRow(
+              Icons.phone,
+              santri.noHpSantri ?? '-',
+            ),
+
+            const SizedBox(height: 6),
+
+            _buildInfoRow(
+              Icons.location_on_outlined,
+              santri.alamatLengkap ?? '-',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(IconData icon, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+
+        Icon(
+          icon,
+          size: 16,
+          color: const Color(0xFF2E7D32),
+        ),
+
+        const SizedBox(width: 8),
+
+        Expanded(
+          child: Text(
+            text,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade700,
+              height: 1.35,
             ),
           ),
         ),
@@ -498,70 +503,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildSantriInfoRow(IconData icon, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF667EEA).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, size: 16, color: const Color(0xFF667EEA)),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Color(0xFF4A5568),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDefaultAvatar() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-        ),
-        shape: BoxShape.circle,
-      ),
-      child: const Icon(
-        Icons.person_rounded,
-        size: 30,
-        color: Colors.white,
-      ),
-    );
-  }
-
-  Widget _buildLoadingAvatar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        shape: BoxShape.circle,
-      ),
-      child: const Center(
-        child: SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667EEA)),
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildErrorWidget(String error) {
     return Center(
