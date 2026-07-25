@@ -51,17 +51,27 @@ class _IzinScreenState extends State<IzinScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        backgroundColor: Color(0xFF004e92),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Izin',
-          style: GoogleFonts.poppins(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-          ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false, 
+        titleSpacing: 0, 
+        title: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
+              onPressed: () => Navigator.of(context).pop(),
+              padding: const EdgeInsets.only(left: 8, right: 4), 
+              constraints: const BoxConstraints(), 
+            ),
+            Text(
+              'Izin',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ],
         ),
       ),
       body: FutureBuilder<List<Izin>>(
@@ -295,12 +305,11 @@ class _IzinScreenState extends State<IzinScreen> {
             });
           }
         },
-        backgroundColor: Color(0xFF004e92),
+        backgroundColor: const Color(0xFF43A047),
         foregroundColor: Colors.white,
         icon: const Icon(Icons.add_rounded),
         label: Text(
           'Tambah',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
         ),
       ),
     );

@@ -4,6 +4,7 @@ import '../../models/santri_model.dart';
 import '../../models/izin_model.dart';
 import '../../services/izin_service.dart';
 import '../../services/santri_service.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class TambahIzinScreen extends StatefulWidget {
   final Izin? izin;
@@ -203,90 +204,161 @@ class _TambahIzinScreenState extends State<TambahIzinScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        title: Row(
+          children: [
+            IconButton(
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.black87,
+              ),
+              onPressed: () => Navigator.pop(context),
+              padding: const EdgeInsets.only(left: 8, right: 4),
+              constraints: const BoxConstraints(),
+            ),
+            Text(
+              'Tambah Izin',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ],
         ),
-        title: Text(isEdit ? 'Edit Izin' : 'Tambah Izin'),
-        backgroundColor:  Color(0xFF004e92),
-        foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+
+      body: SafeArea(
         child: Form(
           key: _formKey,
-          child: Column(
-            children: [
-              _buildSantriSearch(),
-              const SizedBox(height: 16),
-              ListTile(
-                title: const Text("Tanggal Izin"),
-                subtitle: Text(selectedTanggal == null
-                    ? "Belum dipilih"
-                    : DateFormat('dd MMM yyyy').format(selectedTanggal!)),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: _pickDate,
-              ),
-              ListTile(
-                title: const Text("Jam Keluar"),
-                subtitle: Text(keluarTime?.format(context) ?? "Belum dipilih"),
-                trailing: const Icon(Icons.access_time),
-                onTap: () => _pickTime(true),
-              ),
-              ListTile(
-                title: const Text("Jam Kembali"),
-                subtitle: Text(kembaliTime?.format(context) ?? "Belum dipilih"),
-                trailing: const Icon(Icons.access_time),
-                onTap: () => _pickTime(false),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<int>(
-                decoration: const InputDecoration(
-                  labelText: "Kategori",
-                  border: OutlineInputBorder(),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildSantriSearch(),
+
+                const SizedBox(height: 16),
+
+                ListTile(
+                  title: const Text("Tanggal Izin"),
+                  subtitle: Text(
+                    selectedTanggal == null
+                        ? "Belum dipilih"
+                        : DateFormat('dd MMM yyyy').format(selectedTanggal!),
+                  ),
+                  trailing: const Icon(Icons.calendar_today),
+                  onTap: _pickDate,
                 ),
-                value: selectedKategori,
-                items: kategoriList
-                .map((item) => DropdownMenuItem<int>(
-                      value: item['value'] as int,
-                      child: Text(item['label'] as String),
-                    ))
-                .toList(),
-                onChanged: (val) => setState(() => selectedKategori = val),
-                validator: (val) => val == null ? 'Pilih kategori' : null,
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<int>(
-                decoration: const InputDecoration(
-                  labelText: "Status",
-                  border: OutlineInputBorder(),
+
+                ListTile(
+                  title: const Text("Jam Keluar"),
+                  subtitle: Text(
+                    keluarTime?.format(context) ?? "Belum dipilih",
+                  ),
+                  trailing: const Icon(Icons.access_time),
+                  onTap: () => _pickTime(true),
                 ),
-                value: selectedStatus,
-                items: statusList
-                .map((item) => DropdownMenuItem<int>(
-                      value: item['value'] as int,
-                      child: Text(item['label'] as String),
-                    ))
-                .toList(),
-                onChanged: (val) => setState(() => selectedStatus = val),
-                validator: (val) => val == null ? 'Pilih status' : null,
+
+                ListTile(
+                  title: const Text("Jam Kembali"),
+                  subtitle: Text(
+                    kembaliTime?.format(context) ?? "Belum dipilih",
+                  ),
+                  trailing: const Icon(Icons.access_time),
+                  onTap: () => _pickTime(false),
+                ),
+
+                const SizedBox(height: 16),
+
+                DropdownButtonFormField<int>(
+                  decoration: const InputDecoration(
+                    labelText: "Kategori",
+                    border: OutlineInputBorder(),
+                  ),
+                  value: selectedKategori,
+                  items: kategoriList
+                      .map(
+                        (item) => DropdownMenuItem<int>(
+                          value: item['value'] as int,
+                          child: Text(item['label'] as String),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (val) {
+                    setState(() {
+                      selectedKategori = val;
+                    });
+                  },
+                  validator: (val) =>
+                      val == null ? 'Pilih kategori' : null,
+                ),
+
+                const SizedBox(height: 16),
+
+                DropdownButtonFormField<int>(
+                  decoration: const InputDecoration(
+                    labelText: "Status",
+                    border: OutlineInputBorder(),
+                  ),
+                  value: selectedStatus,
+                  items: statusList
+                      .map(
+                        (item) => DropdownMenuItem<int>(
+                          value: item['value'] as int,
+                          child: Text(item['label'] as String),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (val) {
+                    setState(() {
+                      selectedStatus = val;
+                    });
+                  },
+                  validator: (val) =>
+                      val == null ? 'Pilih status' : null,
+                ),
+
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
+
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          color: Colors.white,
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+          child: SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton.icon(
+              onPressed: isLoading ? null : _submitForm,
+              icon: Icon(
+                isEdit ? Icons.edit : Icons.save,
               ),
-              const SizedBox(height: 24),
-              ElevatedButton.icon(
-                icon: Icon(isEdit ? Icons.edit : Icons.save),
-                label: Text(isLoading
+              label: Text(
+                isLoading
                     ? "Menyimpan..."
                     : isEdit
                         ? "Perbarui"
-                        : "Simpan"),
-                onPressed: isLoading ? null : _submitForm,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF004e92),
-                  foregroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(50),
+                        : "Simpan",
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            ],
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF43A047),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
           ),
         ),
       ),
