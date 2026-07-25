@@ -7,6 +7,7 @@ import '../screens/dashboard/kelengkapan_screen.dart';
 import '../screens/dashboard/pemeriksaan_screen.dart';
 import '../screens/dashboard/perilaku_screen.dart';
 import '../screens/dashboard/saku_screen.dart';
+import '../screens/dashboard/perlengkapan_screen.dart';
 
 class MenuIkonWidget extends StatelessWidget {
   const MenuIkonWidget({super.key});
@@ -121,7 +122,14 @@ class MenuIkonWidget extends StatelessWidget {
                 icon: Icons.inventory_2_rounded,
                 title: 'Perlengkapan',
                 color: const Color(0xFFFB8C00),
-                onTap: () => _navigateToPerlengkapan(context),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PerlengkapanScreen(),
+                    ),
+                  );
+                },
               ),
             ],
           ),
