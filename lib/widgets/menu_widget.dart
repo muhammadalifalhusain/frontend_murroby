@@ -6,6 +6,8 @@ import '../screens/dashboard/perilaku_screen.dart';
 import '../screens/dashboard/saku_screen.dart';
 import '../screens/dashboard/kelengkapan_screen.dart';
 import '../screens/dashboard/pemeriksaan_screen.dart';
+import '../screens/dashboard/izin_screen.dart';
+
 
 class MenuIkonWidget extends StatelessWidget {
   const MenuIkonWidget({Key? key}) : super(key: key);
@@ -104,10 +106,15 @@ class MenuIkonWidget extends StatelessWidget {
                         ),
                         _buildEnhancedMenuIkon(
                           Icons.book_rounded,
-                          'Pelanggaran',
-                          'Buat Data Pelanggaran',
+                          'Izin',
+                          'Buat Data Izin',
                           const Color(0xFF00BCD4),
-                          () => _navigateToMateri(context),
+                          () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const IzinScreen()),
+                            );
+                          },
                         ),
                         _buildEnhancedMenuIkon(
                           Icons.schedule_rounded,
