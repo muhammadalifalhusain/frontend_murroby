@@ -143,23 +143,41 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       // ================= FLOATING CAMERA =================
 
-      floatingActionButton: FloatingActionButton(
-        heroTag: "camera",
-        backgroundColor: const Color(0xFF2E7D32),
-        elevation: 8,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => LoginScreenMurroby(),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            heroTag: "camera",
+            backgroundColor: const Color(0xFF2E7D32),
+            elevation: 8,
+            mini: false,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => LoginScreenMurroby(),
+                ),
+              );
+            },
+            child: const Icon(
+              Icons.camera_alt_rounded,
+              color: Colors.white,
+              size: 28,
             ),
-          );
-        },
-        child: const Icon(
-          Icons.camera_alt_rounded,
-          color: Colors.white,
-        ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Text(
+            "Pelanggaran",
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+        color: Colors.grey.shade800,
       ),
+    ),
+  ],
+),
 
       floatingActionButtonLocation:
           FloatingActionButtonLocation.centerDocked,
@@ -168,7 +186,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       bottomNavigationBar: DashboardBottomBar(
         onDashboard: () {
-          // Sudah berada di Dashboard
         },
 
         onLogout: () async {
@@ -209,8 +226,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
           MenuIkonWidget(),
 
-          _buildLogoutButton(context),
-
           const SizedBox(height: 8),
 
           Padding(
@@ -232,70 +247,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-
-  Widget _buildLogoutButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 216, 47, 72),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: const Color.fromARGB(255, 192, 33, 22).withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: ListTile(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          leading: const Icon(Icons.logout, color: Colors.white),
-          title: const Text(
-            'Keluar Akun',
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          onTap: () async {
-            final scaffold = ScaffoldMessenger.of(context);
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) => Center(child: CircularProgressIndicator()),
-            );
-
-            try {
-              final result = await LoginService.logout();
-              await SessionManager.clearSession();
-              Navigator.of(context).pop();
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => LoginScreenMurroby()),
-                (route) => false,
-              );
-              scaffold.showSnackBar(
-                SnackBar(
-                  content: Text(result['message'] ?? 'Logout berhasil'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            } catch (e) {
-              Navigator.of(context).pop();
-              scaffold.showSnackBar(
-                SnackBar(
-                  content: Text('Gagal logout: ${e.toString()}'),
-                  backgroundColor: Colors.red,
-                ),
-              );
-            }
-          },
-        ),
-      ),
-    );
-  }
-
   Widget _buildMurrobyProfileCard(
     DataUser murroby,
     List<Santri> santriList,
@@ -454,13 +405,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
             border: Border.all(color: Colors.grey.withOpacity(0.1)),
           ),
           child: Padding(
@@ -661,7 +605,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onPressed: () => _loginUlang(context),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
