@@ -8,6 +8,8 @@ import '../../utils/session_manager.dart';
 import '../../services/login_service.dart';
 import '../../config/app_config.dart';
 import '../../widgets/dashboard_bottom_bar.dart';
+import 'pelanggaran_screen.dart';
+
 class DashboardScreen extends StatefulWidget {
   @override
   _DashboardScreenState createState() => _DashboardScreenState();
@@ -148,12 +150,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             heroTag: "camera",
             backgroundColor: const Color(0xFF2E7D32),
             elevation: 8,
-            mini: false,
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => LoginScreenMurroby(),
+                  builder: (_) => const PelanggaranScreen(),
                 ),
               );
             },
@@ -171,11 +172,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-        color: Colors.grey.shade800,
+              color: Colors.grey.shade800,
+            ),
+          ),
+        ],
       ),
-    ),
-  ],
-),
 
       floatingActionButtonLocation:
           FloatingActionButtonLocation.centerDocked,
