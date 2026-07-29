@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
 import '../screens/dashboard/izin_screen.dart';
 import '../screens/dashboard/kelengkapan_screen.dart';
 import '../screens/dashboard/pemeriksaan_screen.dart';
 import '../screens/dashboard/perilaku_screen.dart';
-import '../screens/dashboard/saku_screen.dart';
+// import '../screens/dashboard/saku_screen.dart';
 import '../screens/dashboard/perlengkapan_screen.dart';
 
 class MenuIkonWidget extends StatelessWidget {
@@ -36,31 +36,31 @@ class MenuIkonWidget extends StatelessWidget {
             childAspectRatio: .82,
             crossAxisSpacing: 10,
             children: [
-              _buildMenu(
-                context,
-                icon: Icons.account_balance_wallet_rounded,
-                title: 'Uang Saku',
-                color: const Color(0xFF43A047),
-                onTap: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  final userId = prefs.getInt('idUser');
+              // _buildMenu(
+              //   context,
+              //   icon: Icons.account_balance_wallet_rounded,
+              //   title: 'Uang Saku',
+              //   color: const Color(0xFF43A047),
+              //   onTap: () async {
+              //     final prefs = await SharedPreferences.getInstance();
+              //     final userId = prefs.getInt('idUser');
 
-                  if (userId != null) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => UangSakuScreen(userId: userId),
-                      ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('User ID tidak ditemukan'),
-                      ),
-                    );
-                  }
-                },
-              ),
+              //     if (userId != null) {
+              //       Navigator.push(
+              //         context,
+              //         MaterialPageRoute(
+              //           builder: (_) => UangSakuScreen(userId: userId),
+              //         ),
+              //       );
+              //     } else {
+              //       ScaffoldMessenger.of(context).showSnackBar(
+              //         const SnackBar(
+              //           content: Text('User ID tidak ditemukan'),
+              //         ),
+              //       );
+              //     }
+              //   },
+              // ),
               _buildMenu(
                 context,
                 icon: Icons.health_and_safety_rounded,
@@ -186,45 +186,6 @@ class MenuIkonWidget extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-
-  void _navigateToPerlengkapan(BuildContext context) {
-    _showComingSoonDialog(context, 'Perlengkapan');
-  }
-
-  void _showComingSoonDialog(BuildContext context, String feature) {
-    showDialog(
-      context: context,
-      builder: (_) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-          ),
-          title: Text(
-            'Informasi',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          content: Text(
-            'Fitur $feature sedang dalam pengembangan.',
-            style: GoogleFonts.poppins(),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'Tutup',
-                style: GoogleFonts.poppins(
-                  color: const Color(0xFF2E7D32),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 }
