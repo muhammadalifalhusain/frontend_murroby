@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/izin_model.dart';
 import '../../services/izin_service.dart';
@@ -13,6 +14,9 @@ class IzinScreen extends StatefulWidget {
 
 class _IzinScreenState extends State<IzinScreen> {
   late Future<List<Izin>> _izinList;
+
+  
+  static const Color backgroundColor = Color(0xFFF8F9FA);
 
   @override
   void initState() {
@@ -49,29 +53,27 @@ class _IzinScreenState extends State<IzinScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: backgroundColor,
         elevation: 0,
-        automaticallyImplyLeading: false, 
-        titleSpacing: 0, 
-        title: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
-              onPressed: () => Navigator.of(context).pop(),
-              padding: const EdgeInsets.only(left: 8, right: 4), 
-              constraints: const BoxConstraints(), 
-            ),
-            Text(
-              'Izin',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-          ],
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Colors.black87,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          'Izin',
+          style: GoogleFonts.poppins(
+            fontSize: 19,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
         ),
       ),
       body: FutureBuilder<List<Izin>>(

@@ -9,6 +9,7 @@ import '../screens/dashboard/perilaku_screen.dart';
 // import '../screens/dashboard/saku_screen.dart';
 import '../screens/dashboard/perlengkapan_screen.dart';
 import '../screens/dashboard/kerapian_screen.dart';
+import '../screens/dashboard/pelanggaran_ketertiban_screen.dart';
 
 class MenuIkonWidget extends StatelessWidget {
   const MenuIkonWidget({super.key});
@@ -145,6 +146,20 @@ class MenuIkonWidget extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (_) => const KerapianScreen(),
+                    ),
+                  );
+                },
+              ),
+              _buildMenu(
+                context,
+                icon: Icons.fact_check_rounded,
+                title: 'Ketertiban',
+                color: const Color(0xFF8E24AA),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const PelanggaranKetertibanScreen(),
                     ),
                   );
                 },
