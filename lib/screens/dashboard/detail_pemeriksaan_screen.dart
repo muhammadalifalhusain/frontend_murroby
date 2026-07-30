@@ -1,10 +1,10 @@
+
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import '../../models/pemeriksaan_model.dart';
 import '../../services/pemeriksaan_service.dart';
-
 import 'form_pemeriksaan.dart';
-
-import 'package:google_fonts/google_fonts.dart';
 
 class DetailPemeriksaanScreen extends StatefulWidget {
   final int noInduk;
@@ -17,219 +17,313 @@ class DetailPemeriksaanScreen extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _DetailPemeriksaanScreenState createState() => _DetailPemeriksaanScreenState();
+  State<DetailPemeriksaanScreen> createState() =>
+      _DetailPemeriksaanScreenState();
 }
 
-class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
+class _DetailPemeriksaanScreenState
+    extends State<DetailPemeriksaanScreen> {
   late Future<PemeriksaanDetailResponse> _detailFuture;
-  final PemeriksaanService _service = PemeriksaanService();
+
+  static const Color primaryColor = Color(0xFF43A047);
+  static const Color backgroundColor = Color(0xFFF8F9FA);
+  static const Color borderColor = Color(0xFFE7E7E7);
 
   @override
   void initState() {
     super.initState();
-    _detailFuture = PemeriksaanService.getPemeriksaanDetail(widget.noInduk);
+    _loadData();
+  }
+
+  void _loadData() {
+    _detailFuture =
+        PemeriksaanService.getPemeriksaanDetail(widget.noInduk);
+  }
+
+  Future<void> _refreshData() async {
+    setState(() {
+      _loadData();
+    });
+
+    await _detailFuture;
+  }
+
+  Future<void> _addPemeriksaan(
+    int noInduk,
+    String namaSantri,
+  ) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PemeriksaanFormScreen(
+          noInduk: noInduk.toString(),
+          namaSantri: namaSantri,
+        ),
+      ),
+    );
+
+    if (result == true && mounted) {
+      setState(() {
+        _loadData();
+      });
+    }
+  }
+
+  Future<void> _editPemeriksaan(
+    dynamic pemeriksaan,
+  ) async {
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(
+            'Edit Pemeriksaan',
+            style: GoogleFonts.poppins(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          content: Text(
+            'Fitur edit pemeriksaan belum tersedia.',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: Colors.grey[700],
+              height: 1.4,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: Text(
+                'OK',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: primaryColor,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _deletePemeriksaan(
+    DataPemeriksaan pemeriksaan,
+  ) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(
+            'Hapus pemeriksaan?',
+            style: GoogleFonts.poppins(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          content: Text(
+            'Data pemeriksaan ini akan dihapus dan tidak dapat dikembalikan.',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: Colors.grey[700],
+              height: 1.4,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, false);
+              },
+              child: Text(
+                'Batal',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: Colors.grey[700],
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, true);
+              },
+              child: Text(
+                'Hapus',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red[600],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final success =
+          await PemeriksaanService.deletePemeriksaan(
+        pemeriksaan.id,
+      );
+
+      if (!mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Pemeriksaan berhasil dihapus',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+              ),
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        setState(() {
+          _loadData();
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Gagal menghapus pemeriksaan: $e',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+            ),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 230, 229, 229),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      automaticallyImplyLeading: false, 
-      titleSpacing: 0, 
-      title: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
-            onPressed: () => Navigator.of(context).pop(),
-            padding: const EdgeInsets.only(left: 8, right: 4), 
-            constraints: const BoxConstraints(), 
+        backgroundColor: backgroundColor,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Colors.black87,
           ),
-          Text(
-            'Detail Pemeriksaan',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        title: Text(
+          'Detail Pemeriksaan',
+          style: GoogleFonts.poppins(
+            fontSize: 19,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
           ),
-        ],
+        ),
       ),
-    ),
       body: FutureBuilder<PemeriksaanDetailResponse>(
         future: _detailFuture,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState ==
+              ConnectionState.waiting) {
             return _buildLoadingState();
-          } else if (snapshot.hasError) {
-            return _buildErrorState(snapshot.error.toString());
-          } else if (!snapshot.hasData) {
+          }
+
+          if (snapshot.hasError) {
+            return _buildErrorState(
+              snapshot.error.toString(),
+            );
+          }
+
+          if (!snapshot.hasData) {
             return _buildEmptyState();
           }
 
-          final data = snapshot.data!;
-          final santri = data.data.dataSantri;
-          final pemeriksaanList = data.data.dataPemeriksaan;
+          final response = snapshot.data!;
+          final santri = response.data.dataSantri;
+          final pemeriksaanList =
+              response.data.dataPemeriksaan;
 
           return Stack(
             children: [
-              CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: Container(
-                      width: double.infinity,
-                      margin: const EdgeInsets.all(16),
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF6366F1).withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.person_rounded,
-                              size: 28,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  santri.nama,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 2,
-                                ),
-                                const SizedBox(height: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    'No. Induk: ${santri.noInduk}',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+              RefreshIndicator(
+                color: primaryColor,
+                onRefresh: _refreshData,
+                child: ListView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(
+                    16,
+                    8,
+                    16,
+                    100,
+                  ),
+                  children: [
+                    _buildSantriHeader(santri),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Riwayat Pemeriksaan',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
                       ),
                     ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: Container(
-                      margin: const EdgeInsets.fromLTRB(16, 24, 16, 12),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.history,
-                            color: Colors.teal,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Riwayat Pemeriksaan',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey[800],
-                            ),
-                          ),
-                        ],
+                    const SizedBox(height: 10),
+                    if (pemeriksaanList.isEmpty)
+                      _buildNoPemeriksaanState()
+                    else
+                      ...pemeriksaanList.asMap().entries.map(
+                        (entry) {
+                          return _buildPemeriksaanItem(
+                            entry.value,
+                            entry.key,
+                          );
+                        },
                       ),
-                    ),
-                  ),
-                  pemeriksaanList.isEmpty
-                      ? SliverToBoxAdapter(child: _buildNoPemeriksaanState())
-                      : SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final pemeriksaan = pemeriksaanList[index];
-                              return Container(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.1),
-                                      blurRadius: 4,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: _buildPemeriksaanCard(pemeriksaan, index),
-                              );
-                            },
-                            childCount: pemeriksaanList.length,
-                          ),
-                        ),
-                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
-                ],
-              ),
-              Positioned(
-                bottom: 16,
-                right: 16,
-                child: FloatingActionButton(
-                  onPressed: () async {
-                    final result = await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PemeriksaanFormScreen(
-                          noInduk: santri.noInduk.toString(),
-                          namaSantri: santri.nama,
-                        ),
-                      ),
-                    );
-
-                    if (result == true && mounted) {
-                      setState(() {
-                        _detailFuture = PemeriksaanService.getPemeriksaanDetail(santri.noInduk);
-                      });
-                    }
-                  },
-                  backgroundColor: const Color(0xFF6366F1),
-                  foregroundColor: Colors.white,
-                  child: const Icon(Icons.add),
+                  ],
                 ),
               ),
-
+              Positioned(
+                right: 16,
+                bottom: 16,
+                child: FloatingActionButton.extended(
+                  onPressed: () {
+                    _addPemeriksaan(
+                      santri.noInduk,
+                      santri.nama,
+                    );
+                  },
+                  backgroundColor: primaryColor,
+                  foregroundColor: Colors.white,
+                  elevation: 2,
+                  icon: const Icon(
+                    Icons.add_rounded,
+                  ),
+                  label: Text(
+                    'Tambah',
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
             ],
           );
         },
@@ -237,20 +331,315 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
     );
   }
 
+  Widget _buildSantriHeader(
+    DataSantriDetail santri,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: borderColor,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            santri.nama,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'No. Induk : ${santri.noInduk}',
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPemeriksaanItem(
+    DataPemeriksaan pemeriksaan,
+    int index,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(
+        bottom: 12,
+      ),
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        15,
+        10,
+        16,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: borderColor,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pemeriksaan ${index + 1}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          size: 12,
+                          color: Colors.grey[500],
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          _formatDate(
+                            pemeriksaan.tanggalPemeriksaanDate,
+                          ),
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuButton<String>(
+                padding: EdgeInsets.zero,
+                icon: Icon(
+                  Icons.more_vert_rounded,
+                  color: Colors.grey[600],
+                ),
+                onSelected: (value) {
+                  switch (value) {
+                    case 'edit':
+                      _editPemeriksaan(
+                        pemeriksaan,
+                      );
+                      break;
+                    case 'delete':
+                      _deletePemeriksaan(
+                        pemeriksaan,
+                      );
+                      break;
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.edit_outlined,
+                          size: 18,
+                          color: Colors.grey[700],
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Edit',
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.delete_outline_rounded,
+                          size: 18,
+                          color: Colors.red[500],
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          'Hapus',
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: Colors.red[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          const Divider(
+            height: 1,
+            color: Color(0xFFEDEDED),
+          ),
+          const SizedBox(height: 8),
+          _buildInfoRow(
+            'Tinggi Badan',
+            pemeriksaan.tinggiBadan != null
+                ? '${pemeriksaan.tinggiBadan} cm'
+                : '-',
+          ),
+          _buildInfoRow(
+            'Berat Badan',
+            pemeriksaan.beratBadan != null
+                ? '${pemeriksaan.beratBadan} kg'
+                : '-',
+          ),
+          _buildInfoRow(
+            'Lingkar Pinggul',
+            pemeriksaan.lingkarPinggul != null
+                ? '${pemeriksaan.lingkarPinggul} cm'
+                : '-',
+          ),
+          _buildInfoRow(
+            'Lingkar Dada',
+            pemeriksaan.lingkarDada != null
+                ? '${pemeriksaan.lingkarDada} cm'
+                : '-',
+          ),
+          _buildInfoRow(
+            'Kondisi Gigi',
+            pemeriksaan.kondisiGigi ?? '-',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(
+    String label,
+    String value,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        vertical: 6,
+      ),
+      child: Row(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoPemeriksaanState() {
+    return Container(
+      margin: const EdgeInsets.only(
+        top: 4,
+      ),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: borderColor,
+        ),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.medical_services_outlined,
+            size: 42,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Belum Ada Pemeriksaan',
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            'Belum terdapat riwayat pemeriksaan untuk santri ini.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: Colors.grey[600],
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildLoadingState() {
     return Center(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+          const SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(
+                primaryColor,
+              ),
+            ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 12),
           Text(
             'Memuat data pemeriksaan...',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
+              fontSize: 13,
               color: Colors.grey[600],
-              fontSize: 16,
             ),
           ),
         ],
@@ -261,45 +650,57 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
   Widget _buildErrorState(String error) {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(32),
+        padding: const EdgeInsets.all(32),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red[300],
+              Icons.error_outline_rounded,
+              size: 44,
+              color: Colors.grey[500],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 12),
             Text(
-              'Terjadi Kesalahan',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+              'Gagal memuat data',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               error,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
+                fontSize: 12,
                 color: Colors.grey[600],
-                fontSize: 14,
+                height: 1.4,
               ),
             ),
-            SizedBox(height: 24),
-            ElevatedButton.icon(
+            const SizedBox(height: 16),
+            OutlinedButton(
               onPressed: () {
                 setState(() {
-                  _detailFuture = PemeriksaanService.getPemeriksaanDetail(widget.noInduk); 
+                  _loadData();
                 });
               },
-              icon: Icon(Icons.refresh),
-              label: Text('Coba Lagi'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal,
-                foregroundColor: Colors.white,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: primaryColor,
+                side: const BorderSide(
+                  color: primaryColor,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Coba Lagi',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
@@ -311,31 +712,32 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
   Widget _buildEmptyState() {
     return Center(
       child: Padding(
-        padding: EdgeInsets.all(32),
+        padding: const EdgeInsets.all(32),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.inbox_outlined,
-              size: 64,
+              size: 44,
               color: Colors.grey[400],
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 12),
             Text(
               'Data Tidak Tersedia',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 5),
             Text(
               'Tidak ada data pemeriksaan yang ditemukan.',
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: GoogleFonts.poppins(
+                fontSize: 12,
                 color: Colors.grey[600],
-                fontSize: 14,
+                height: 1.4,
               ),
             ),
           ],
@@ -344,306 +746,26 @@ class _DetailPemeriksaanScreenState extends State<DetailPemeriksaanScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                icon,
-                color: color,
-                size: 20,
-              ),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
+  String _formatDate(DateTime? date) {
+    if (date == null) {
+      return '-';
+    }
 
-  Widget _buildNoPemeriksaanState() {
-    return Container(
-      margin: EdgeInsets.all(32),
-      padding: EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.medical_services_outlined,
-            size: 48,
-            color: Colors.grey[400],
-          ),
-          SizedBox(height: 16),
-          Text(
-            'Belum Ada Pemeriksaan',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[700],
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Mulai tambahkan data pemeriksaan untuk santri ini.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPemeriksaanCard(dynamic pemeriksaan, int index) {
-    return ExpansionTile(
-      tilePadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      childrenPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-
-      // Leading icon
-      leading: Container(
-        decoration: BoxDecoration(
-          color: Colors.teal.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        padding: const EdgeInsets.all(6),
-        child: const Icon(
-          Icons.medical_services,
-          color: Colors.teal,
-          size: 20,
-        ),
-      ),
-
-      // Title & subtitle
-      title: Text(
-        'Pemeriksaan ${index + 1}',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-          color: Colors.grey[800],
-        ),
-      ),
-      subtitle: Text(
-        _formatDate(pemeriksaan.tanggalPemeriksaanDate),
-        style: TextStyle(
-          color: Colors.grey[600],
-          fontSize: 14,
-        ),
-      ),
-      trailing: PopupMenuButton<String>(
-        icon: Icon(Icons.more_vert, color: Colors.grey[600]),
-        itemBuilder: (context) => [
-          PopupMenuItem(
-            value: 'edit',
-            child: Row(
-              children: const [
-                Icon(Icons.edit, size: 20, color: Colors.blue),
-                SizedBox(width: 8),
-                Text('Edit'),
-              ],
-            ),
-          ),
-          PopupMenuItem(
-            value: 'delete',
-            child: Row(
-              children: const [
-                Icon(Icons.delete, size: 20, color: Colors.red),
-                SizedBox(width: 8),
-                Text('Hapus'),
-              ],
-            ),
-          ),
-        ],
-        onSelected: (value) {
-          if (value == 'edit') {
-            _showEditPemeriksaanDialog(pemeriksaan);
-          } else if (value == 'delete') {
-            _showDeleteConfirmation(pemeriksaan);
-          }
-        },
-      ),
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(8),
-          ),
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            children: [
-              _buildDetailRow('Tinggi Badan', '${pemeriksaan.tinggiBadan ?? '-'} cm', Icons.height),
-              _buildDetailRow('Berat Badan', '${pemeriksaan.beratBadan ?? '-'} kg', Icons.monitor_weight),
-              _buildDetailRow('Lingkar Pinggul', '${pemeriksaan.lingkarPinggul ?? '-'} cm', Icons.straighten),
-              _buildDetailRow('Lingkar Dada', '${pemeriksaan.lingkarDada ?? '-'} cm', Icons.straighten),
-              _buildDetailRow('Kondisi Gigi', pemeriksaan.kondisiGigi ?? '-', Icons.medical_services),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-
-  Widget _buildDetailRow(String label, String value, IconData icon) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            size: 18,
-            color: Colors.teal,
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            flex: 2,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[700],
-                fontSize: 14,
-              ),
-            ),
-          ),
-          Text(
-            ': ',
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              color: Colors.grey[700],
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[800],
-              ),
-              textAlign: TextAlign.end,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(DateTime date) {
-    final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-      'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'Mei',
+      'Jun',
+      'Jul',
+      'Ags',
+      'Sep',
+      'Okt',
+      'Nov',
+      'Des',
     ];
+
     return '${date.day} ${months[date.month - 1]} ${date.year}';
   }
-
-  
-  void _showEditPemeriksaanDialog(dynamic pemeriksaan) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Edit Pemeriksaan'),
-        content: Text('Fitur edit pemeriksaan akan segera tersedia.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showDeleteConfirmation(DataPemeriksaan pemeriksaan) {
-    final rootContext = context; 
-    showDialog(
-      context: rootContext,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Konfirmasi'),
-        content: const Text('Apakah kamu yakin ingin menghapus pemeriksaan ini?'),
-        actions: [
-          TextButton(
-            child: const Text('Batal'),
-            onPressed: () => Navigator.pop(dialogContext), // gunakan context dialog
-          ),
-          TextButton(
-            child: const Text('Hapus', style: TextStyle(color: Colors.red)),
-            onPressed: () async {
-              Navigator.pop(dialogContext); // Tutup dialog dulu
-
-              try {
-                final success = await PemeriksaanService.deletePemeriksaan(pemeriksaan.id);
-
-                if (success && mounted) {
-                  ScaffoldMessenger.of(rootContext).showSnackBar(
-                    const SnackBar(content: Text('Pemeriksaan berhasil dihapus')),
-                  );
-
-                  setState(() {
-                    _detailFuture = PemeriksaanService.getPemeriksaanDetail(widget.noInduk);
-                  });
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(rootContext).showSnackBar(
-                    SnackBar(content: Text('Gagal menghapus: $e')),
-                  );
-                }
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-
 }

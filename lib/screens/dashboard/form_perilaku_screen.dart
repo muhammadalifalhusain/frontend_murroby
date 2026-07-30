@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -7,10 +8,10 @@ import '../../services/perilaku_service.dart';
 
 class FormPerilakuScreen extends StatefulWidget {
   final int noInduk;
-  final String? namaSantri; 
+  final String? namaSantri;
 
   const FormPerilakuScreen({
-    Key? key, 
+    Key? key,
     required this.noInduk,
     this.namaSantri,
   }) : super(key: key);
@@ -21,10 +22,11 @@ class FormPerilakuScreen extends StatefulWidget {
 
 class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
   final _formKey = GlobalKey<FormState>();
+
   bool _isLoading = false;
 
   DateTime _selectedDate = DateTime.now();
-  final TextEditingController _dateController = TextEditingController();
+  late TextEditingController _dateController;
 
   int _ketertiban = 2;
   int _kebersihan = 2;
@@ -34,24 +36,24 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
   int _kepekaanLingkungan = 2;
   int _ketaatanPeraturan = 2;
 
-  // Mapping nilai ke text
   final Map<int, String> _scoreMap = {
     0: 'Kurang Baik',
     1: 'Cukup',
     2: 'Baik',
   };
 
-  // Mapping nilai ke warna
   final Map<int, Color> _colorMap = {
-    0: const Color(0xFFEF4444), 
-    1: const Color(0xFFF59E0B), 
-    2: const Color(0xFF10B981), 
+    0: const Color(0xFFE53935),
+    1: const Color(0xFFFB8C00),
+    2: const Color(0xFF43A047),
   };
 
   @override
   void initState() {
     super.initState();
-    _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    _dateController = TextEditingController(
+      text: DateFormat('dd MMMM yyyy', 'id_ID').format(_selectedDate),
+    );
   }
 
   @override
@@ -61,7 +63,7 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
   }
 
   Future<void> _selectDate() async {
-    final DateTime? picked = await showDatePicker(
+    final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
       firstDate: DateTime(2020),
@@ -70,10 +72,10 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF6366F1),
+              primary: Color(0xFF43A047),
               onPrimary: Colors.white,
               surface: Colors.white,
-              onSurface: Colors.black,
+              onSurface: Colors.black87,
             ),
           ),
           child: child!,
@@ -81,13 +83,15 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
       },
     );
 
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-        _dateController.text = DateFormat('yyyy-MM-dd').format(picked);
-      });
-    }
+    if (picked == null) return;
+
+    setState(() {
+      _selectedDate = picked;
+      _dateController.text =
+          DateFormat('dd MMMM yyyy', 'id_ID').format(picked);
+    });
   }
+
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -108,7 +112,6 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
         ketaatanPeraturan: _ketaatanPeraturan,
       );
 
-      // Kirim ke backend
       final success = await PerilakuService.postPerilaku(request);
 
       if (!mounted) return;
@@ -116,62 +119,24 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 12),
-                Text(
-                  'Data berhasil ditambahkan',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                ),
-              ],
+            content: Text(
+              'Data perilaku berhasil ditambahkan',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            backgroundColor: const Color(0xFF10B981),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
 
-        Navigator.of(context).pop(true); 
+        Navigator.of(context).pop(true);
       } else {
-        // Gagal response 400+
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error, color: Colors.white),
-                const SizedBox(width: 12),
-                const Text('Gagal menambahkan data perilaku'),
-              ],
-            ),
-            backgroundColor: const Color(0xFFEF4444),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
+        _showMessage('Gagal menambahkan data perilaku');
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.error, color: Colors.white),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    'Terjadi kesalahan: $e',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                  ),
-                ),
-              ],
-            ),
-            backgroundColor: const Color(0xFFEF4444),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-      }
+      if (!mounted) return;
+      _showMessage('Terjadi kesalahan: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -181,231 +146,58 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
     }
   }
 
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(fontSize: 13),
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFFF8F9FA),
         elevation: 0,
         automaticallyImplyLeading: false,
         titleSpacing: 0,
-        title: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
-              onPressed: () => Navigator.of(context).pop(),
-              padding: const EdgeInsets.only(left: 8, right: 4),
-              constraints: const BoxConstraints(),
-            ),
-            Text(
-              'Tambah Perilaku',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-          ],
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Colors.black87,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          'Tambah Perilaku',
+          style: GoogleFonts.poppins(
+            fontSize: 19,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
         ),
       ),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Info
-              Container(
-                width: double.infinity,
-                margin: const EdgeInsets.all(16),
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF6366F1).withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: const Icon(
-                            Icons.assignment_add,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Tambah Catatan Perilaku',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: Colors.white.withOpacity(0.8),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                widget.namaSantri ?? 'No. Induk: ${widget.noInduk}',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Form Content
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Tanggal Section
-                    _buildSectionCard(
-                      title: 'Tanggal Penilaian',
-                      icon: Icons.calendar_today,
-                      child: TextFormField(
-                        controller: _dateController,
-                        readOnly: true,
-                        onTap: _selectDate,
-                        decoration: InputDecoration(
-                          hintText: 'Pilih tanggal',
-                          suffixIcon: const Icon(Icons.calendar_today, color: Color(0xFF6366F1)),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey.shade300),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey.shade300),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF6366F1)),
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey.shade50,
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Tanggal harus dipilih';
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
-
-                    const SizedBox(height: 20),
-                    _buildSectionCard(
-                      title: 'Penilaian Perilaku',
-                      icon: Icons.assessment,
-                      child: Column(
-                        children: [
-                          _buildScoreSelector('Ketertiban', Icons.rule_rounded, _ketertiban, (value) {
-                            setState(() => _ketertiban = value);
-                          }),
-                          _buildScoreSelector('Kebersihan', Icons.cleaning_services_rounded, _kebersihan, (value) {
-                            setState(() => _kebersihan = value);
-                          }),
-                          _buildScoreSelector('Kedisiplinan', Icons.timer_rounded, _kedisiplinan, (value) {
-                            setState(() => _kedisiplinan = value);
-                          }),
-                          _buildScoreSelector('Kerapian', Icons.checkroom_rounded, _kerapian, (value) {
-                            setState(() => _kerapian = value);
-                          }),
-                          _buildScoreSelector('Kesopanan', Icons.waving_hand_rounded, _kesopanan, (value) {
-                            setState(() => _kesopanan = value);
-                          }),
-                          _buildScoreSelector('Kepekaan Lingkungan', Icons.nature_people_rounded, _kepekaanLingkungan, (value) {
-                            setState(() => _kepekaanLingkungan = value);
-                          }),
-                          _buildScoreSelector('Ketaatan Peraturan', Icons.gavel_rounded, _ketaatanPeraturan, (value) {
-                            setState(() => _ketaatanPeraturan = value);
-                          }, isLast: true),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _submitForm,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF6366F1),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 2,
-                        ),
-                        child: _isLoading
-                            ? Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    'Menyimpan...',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : Text(
-                                'Simpan Data Perilaku',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 32),
-                  ],
-                ),
-              ),
+              _buildSantriInfo(),
+              const SizedBox(height: 24),
+              _buildDateSection(),
+              const SizedBox(height: 24),
+              _buildAssessmentSection(),
+              const SizedBox(height: 28),
+              _buildSubmitButton(),
             ],
           ),
         ),
@@ -413,55 +205,221 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
     );
   }
 
-  Widget _buildSectionCard({
-    required String title,
-    required IconData icon,
-    required Widget child,
-  }) {
+  Widget _buildSantriInfo() {
     return Container(
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 14,
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(
+            color: Color(0xFFE7E7E7),
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: const Color(0xFF43A047).withOpacity(.08),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.person_outline_rounded,
+              size: 22,
+              color: Color(0xFF43A047),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(icon, size: 20, color: const Color(0xFF6366F1)),
-                ),
-                const SizedBox(width: 12),
                 Text(
-                  title,
+                  widget.namaSantri ?? 'Santri',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.poppins(
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF1F2937),
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'No. Induk: ${widget.noInduk}',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    color: Colors.grey[600],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            child,
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildDateSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Tanggal Penilaian',
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _dateController,
+          readOnly: true,
+          onTap: _selectDate,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            color: Colors.black87,
+            fontWeight: FontWeight.w500,
+          ),
+          decoration: InputDecoration(
+            prefixIcon: const Icon(
+              Icons.calendar_today_outlined,
+              size: 19,
+              color: Color(0xFF43A047),
+            ),
+            suffixIcon: const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: Colors.grey,
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 14,
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: Color(0xFFE1E1E1),
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: Color(0xFFE1E1E1),
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: const BorderSide(
+                color: Color(0xFF43A047),
+              ),
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Tanggal harus dipilih';
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAssessmentSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Penilaian Perilaku',
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Pilih kondisi yang sesuai untuk setiap aspek.',
+          style: GoogleFonts.poppins(
+            fontSize: 11,
+            color: Colors.grey[600],
+          ),
+        ),
+        const SizedBox(height: 14),
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 4,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFE7E7E7),
+            ),
+          ),
+          child: Column(
+            children: [
+              _buildScoreSelector(
+                'Ketertiban',
+                Icons.rule_rounded,
+                _ketertiban,
+                (value) => setState(() => _ketertiban = value),
+              ),
+              _buildScoreSelector(
+                'Kebersihan',
+                Icons.cleaning_services_outlined,
+                _kebersihan,
+                (value) => setState(() => _kebersihan = value),
+              ),
+              _buildScoreSelector(
+                'Kedisiplinan',
+                Icons.schedule_rounded,
+                _kedisiplinan,
+                (value) => setState(() => _kedisiplinan = value),
+              ),
+              _buildScoreSelector(
+                'Kerapian',
+                Icons.checkroom_outlined,
+                _kerapian,
+                (value) => setState(() => _kerapian = value),
+              ),
+              _buildScoreSelector(
+                'Kesopanan',
+                Icons.waving_hand_outlined,
+                _kesopanan,
+                (value) => setState(() => _kesopanan = value),
+              ),
+              _buildScoreSelector(
+                'Kepekaan Lingkungan',
+                Icons.nature_people_outlined,
+                _kepekaanLingkungan,
+                (value) => setState(
+                  () => _kepekaanLingkungan = value,
+                ),
+              ),
+              _buildScoreSelector(
+                'Ketaatan Peraturan',
+                Icons.gavel_outlined,
+                _ketaatanPeraturan,
+                (value) => setState(
+                  () => _ketaatanPeraturan = value,
+                ),
+                isLast: true,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -469,76 +427,148 @@ class _FormPerilakuScreenState extends State<FormPerilakuScreen> {
     String label,
     IconData icon,
     int currentValue,
-    Function(int) onChanged, {
+    ValueChanged<int> onChanged, {
     bool isLast = false,
   }) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: _colorMap[currentValue]!.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+    final activeColor = _colorMap[currentValue]!;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: activeColor,
               ),
-              child: Icon(icon, size: 16, color: _colorMap[currentValue]),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                label,
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF374151),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [0, 1, 2].map((score) {
-            return Expanded(
-              child: GestureDetector(
-                onTap: () => onChanged(score),
-                child: Container(
-                  margin: EdgeInsets.only(
-                    right: score < 2 ? 8 : 0,
+              Text(
+                _scoreMap[currentValue]!,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  color: activeColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [0, 1, 2].map((score) {
+              final isSelected = currentValue == score;
+
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    right: score == 0 || score == 1 ? 6 : 0,
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: currentValue == score
-                        ? _colorMap[score]
-                        : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: currentValue == score
-                          ? _colorMap[score]!
-                          : Colors.grey.shade300,
-                      width: currentValue == score ? 2 : 1,
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      _scoreMap[score]!,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: currentValue == score
-                            ? Colors.white
-                            : Colors.grey.shade600,
+                  child: GestureDetector(
+                    onTap: () => onChanged(score),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      height: 38,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? _colorMap[score]!.withOpacity(.10)
+                            : const Color(0xFFF7F7F7),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isSelected
+                              ? _colorMap[score]!
+                              : const Color(0xFFE2E2E2),
+                          width: isSelected ? 1.2 : 1,
+                        ),
+                      ),
+                      child: Text(
+                        _scoreMap[score]!,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: isSelected
+                              ? _colorMap[score]
+                              : Colors.grey[600],
+                        ),
                       ),
                     ),
                   ),
                 ),
+              );
+            }).toList(),
+          ),
+          if (!isLast)
+            const Padding(
+              padding: EdgeInsets.only(top: 12),
+              child: Divider(
+                height: 1,
+                color: Color(0xFFEDEDED),
               ),
-            );
-          }).toList(),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _submitForm,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF43A047),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          disabledBackgroundColor: Colors.grey[300],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
-        if (!isLast) const SizedBox(height: 20),
-      ],
+        child: _isLoading
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Menyimpan...',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              )
+            : Text(
+                'Simpan Penilaian',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+      ),
     );
   }
 }

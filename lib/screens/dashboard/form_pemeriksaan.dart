@@ -469,19 +469,11 @@ class _PemeriksaanFormScreenState extends State<PemeriksaanFormScreen>
           end: Alignment.centerRight,
         ),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.teal.shade200,
-            offset: const Offset(0, 4),
-            blurRadius: 12,
-            spreadRadius: 0,
-          ),
-        ],
       ),
       child: ElevatedButton(
         onPressed: _isLoading ? null : _submitForm,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
+          backgroundColor: Color(0xFF43A047),
           shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -502,7 +494,7 @@ class _PemeriksaanFormScreenState extends State<PemeriksaanFormScreen>
                   Icon(Icons.save, color: Colors.white, size: 20),
                   SizedBox(width: 12),
                   Text(
-                    'SIMPAN',
+                    'Simpan',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 16,

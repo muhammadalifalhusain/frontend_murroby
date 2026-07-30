@@ -502,29 +502,31 @@ Widget build(BuildContext context) {
         );
       },
     ),
-    floatingActionButton: ScaleTransition(
-      scale: _fabAnimation,
-      child: FloatingActionButton(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const TambahKerapianScreen(),
+      floatingActionButton: Container(
+          child: FloatingActionButton.extended(
+            onPressed: () async {
+              final result = await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const TambahKerapianScreen()),
+              );
+              if (result == true) {
+                _loadData();
+              }
+            },
+            backgroundColor: const Color(0xFF43A047),
+            foregroundColor: Colors.white,
+            elevation: 0,
+            icon: const Icon(Icons.add_rounded),
+            label: Text(
+              'Tambah',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          );
-
-          if (result == true) {
-            _loadData();
-          }
-        },
-        backgroundColor: const Color(0xFF43A047),
-        foregroundColor: Colors.white,
-        elevation: 2,
-        child: const Icon(Icons.add_rounded),
-      ),
-    ),
-  );
-}
+          ),
+        ),
+    );
+  }
 
   Widget _buildStatsRow(KerapianItem item) {
     final List<Map<String, dynamic>> stats = [

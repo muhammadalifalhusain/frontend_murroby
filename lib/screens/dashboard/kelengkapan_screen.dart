@@ -1,8 +1,10 @@
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'detail_kelengkapan_screen.dart';
+
 import '../../models/kelengkapan_model.dart';
 import '../../services/kelengkapan_service.dart';
+import 'detail_kelengkapan_screen.dart';
 
 class KelengkapanScreen extends StatefulWidget {
   const KelengkapanScreen({super.key});
@@ -13,117 +15,138 @@ class KelengkapanScreen extends StatefulWidget {
 
 class _KelengkapanScreenState extends State<KelengkapanScreen> {
   late Future<KelengkapanResponse> _futureKelengkapan;
-  final KelengkapanService _service = KelengkapanService();
 
-  Color getBackgroundColor(String value) {
-  switch (value.toLowerCase()) {
-    case 'lengkap & baik':
-      return Colors.green.shade400;
-    case 'lengkap & kurang baik':
-      return Colors.orange.shade400;
-    case 'tidak lengkap':
-      return const Color.fromARGB(255, 216, 46, 33);
-    default:
-      return Colors.grey.shade300;
-  }
-}
-
+  static const Color _primaryColor = Color(0xFF43A047);
+  static const Color _backgroundColor = Color(0xFFF8F9FA);
 
   @override
   void initState() {
     super.initState();
-    _futureKelengkapan = KelengkapanService.fetchKelengkapanData();
+    _loadData();
+  }
+
+  void _loadData() {
+    _futureKelengkapan =
+        KelengkapanService.fetchKelengkapanData();
+  }
+
+  Future<void> _refreshData() async {
+    setState(() {
+      _loadData();
+    });
+
+    await _futureKelengkapan;
+  }
+
+  Color _getStatusColor(String value) {
+    switch (value.toLowerCase().trim()) {
+      case 'lengkap & baik':
+        return const Color(0xFF43A047);
+
+      case 'lengkap & kurang baik':
+        return const Color(0xFFFFA000);
+
+      case 'tidak lengkap':
+        return const Color(0xFFE53935);
+
+      default:
+        return Colors.grey.shade500;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 230, 229, 229),
+      backgroundColor: _backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: _backgroundColor,
         elevation: 0,
-        automaticallyImplyLeading: false, 
-        titleSpacing: 0, 
-        title: Row(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
-              onPressed: () => Navigator.of(context).pop(),
-              padding: const EdgeInsets.only(left: 8, right: 4), 
-              constraints: const BoxConstraints(), 
-            ),
-            Text(
-              'Kelengkapan',
-              style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-          ],
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Colors.black87,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          'Kelengkapan',
+          style: GoogleFonts.poppins(
+            fontSize: 19,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
         ),
       ),
       body: FutureBuilder<KelengkapanResponse>(
         future: _futureKelengkapan,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667EEA)),
-              ),
-            );
+            return _buildLoadingState();
           }
 
           if (snapshot.hasError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+            return _buildErrorState(
+              snapshot.error.toString(),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return _buildEmptyState();
+          }
+
+          final data = snapshot.data!;
+          final santriList = data.data.dataSantri;
+
+          if (santriList.isEmpty) {
+            return RefreshIndicator(
+              color: _primaryColor,
+              onRefresh: _refreshData,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.grey.shade400,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Terjadi kesalahan",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "${snapshot.error}",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey.shade500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  const SizedBox(height: 120),
+                  _buildEmptyState(),
                 ],
               ),
             );
           }
-          final perilaku = snapshot.data!;
-          final santriList = perilaku.data.dataSantri;
 
-          return Column(
-            children: [
-              const SizedBox(height: 16),
-              _buildStatsSummary(santriList),
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: santriList.length,
-                  itemBuilder: (context, index) {
-                    final santri = santriList[index];
-                    return _buildSantriCard(santri, index);
+          return RefreshIndicator(
+            color: _primaryColor,
+            onRefresh: _refreshData,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(
+                16,
+                8,
+                16,
+                100,
+              ),
+              children: [
+                _buildStatsSummary(santriList),
+                const SizedBox(height: 20),
+                Text(
+                  'Data Kelengkapan Santri',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ...santriList.asMap().entries.map(
+                  (entry) {
+                    return _buildSantriCard(
+                      entry.value,
+                      entry.key,
+                    );
                   },
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),
@@ -132,83 +155,104 @@ class _KelengkapanScreenState extends State<KelengkapanScreen> {
 
   Widget _buildStatsSummary(List<DataSantri> santriList) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFE7E7E7),
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF667EEA).withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStatItem("Total Santri", "${santriList.length}", Icons.people_rounded),
+          Expanded(
+            child: _buildStatItem(
+              icon: Icons.people_alt_outlined,
+              title: 'Total Santri',
+              value: '${santriList.length}',
+            ),
+          ),
           Container(
             width: 1,
-            height: 40,
-            color: Colors.white.withOpacity(0.3),
+            height: 42,
+            color: const Color(0xFFE7E7E7),
           ),
-          _buildStatItem("Penilaian", "3 Aspek", Icons.assessment_rounded),
+          Expanded(
+            child: _buildStatItem(
+              icon: Icons.inventory_2_outlined,
+              title: 'Aspek',
+              value: '3',
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(String title, String value, IconData icon) {
-    return Column(
+  Widget _buildStatItem({
+    required IconData icon,
+    required String title,
+    required String value,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(icon, color: Colors.white, size: 24),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+        Container(
+          padding: const EdgeInsets.all(9),
+          decoration: BoxDecoration(
+            color: _primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: _primaryColor,
           ),
         ),
-        Text(
-          title,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
-            fontSize: 12,
-          ),
+        const SizedBox(width: 10),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: GoogleFonts.poppins(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            Text(
+              title,
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildSantriCard(DataSantri santri, int index) {
-  return Container(
-    margin: const EdgeInsets.only(bottom: 16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.grey.withOpacity(0.1),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
+  Widget _buildSantriCard(
+    DataSantri santri,
+    int index,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFE7E7E7),
         ),
-      ],
-      border: Border.all(color: Colors.grey.withOpacity(0.1)),
-    ),
-    child: Padding(
-      padding: const EdgeInsets.all(12),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Column(
@@ -216,120 +260,336 @@ class _KelengkapanScreenState extends State<KelengkapanScreen> {
                   children: [
                     Text(
                       santri.nama,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2D3748),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
                       ),
                     ),
+                    const SizedBox(height: 3),
                     Text(
-                      santri.tanggal,
-                      style: const TextStyle(
-                        color: Color(0xFF4A5568),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                      'No. Induk : ${santri.noInduk}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.grey[600],
                       ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today_outlined,
+                          size: 11,
+                          color: Colors.grey[500],
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          santri.tanggal,
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-              ElevatedButton.icon(
-                onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DetailKelengkapanScreen(noInduk: santri.noInduk),
-                    ),
-                  );
-
-                  if (result == true) {
-                    setState(() {
-                      _futureKelengkapan = KelengkapanService.fetchKelengkapanData();
-                    });
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF667EEA),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              const SizedBox(width: 10),
+              OutlinedButton.icon(
+                onPressed: () => _openDetail(santri),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: _primaryColor,
+                  side: const BorderSide(
+                    color: _primaryColor,
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-                  elevation: 2,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 11,
+                    vertical: 7,
+                  ),
+                  minimumSize: Size.zero,
+                  tapTargetSize:
+                      MaterialTapTargetSize.shrinkWrap,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-                icon: const Icon(Icons.visibility, size: 13, color: Colors.white),
-                label: const Text(
+                icon: const Icon(
+                  Icons.visibility_outlined,
+                  size: 15,
+                ),
+                label: Text(
                   'Detail',
-                  style: TextStyle(fontSize: 13, color: Colors.white, fontWeight: FontWeight.w600),
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
-
-          const SizedBox(height: 10),
-
-          // Skor Kelengkapan
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            childAspectRatio: 3.5,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 8,
-            children: [
-              _buildScoreRow(Icons.shower, "Mandi", santri.perlengkapanMandi, getBackgroundColor(santri.perlengkapanMandi)),
-              _buildScoreRow(Icons.school, "Alat Sekolah", santri.peralatanSekolah, getBackgroundColor(santri.peralatanSekolah)),
-              _buildScoreRow(Icons.checkroom, "Perlengkapan Diri", santri.perlengkapanDiri, getBackgroundColor(santri.perlengkapanDiri)),
-            ],
+          const SizedBox(height: 14),
+          const Divider(
+            height: 1,
+            color: Color(0xFFEDEDED),
           ),
+          const SizedBox(height: 12),
+          _buildCompletenessGrid(santri),
         ],
       ),
-    ),
-  );
-}
+    );
+  }
 
-
-  Widget _buildScoreRow(IconData icon, String label, String score, Color color) {
-    return Row(
+  Widget _buildCompletenessGrid(DataSantri santri) {
+    return Column(
       children: [
-        Container(
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, size: 14, color: color),
+        Row(
+          children: [
+            Expanded(
+              child: _buildScoreItem(
+                icon: Icons.shower_outlined,
+                label: 'Mandi',
+                value: santri.perlengkapanMandi,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildScoreItem(
+                icon: Icons.school_outlined,
+                label: 'Alat Sekolah',
+                value: santri.peralatanSekolah,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Color(0xFF4A5568),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _buildScoreItem(
+                icon: Icons.checkroom_outlined,
+                label: 'Perlengkapan Diri',
+                value: santri.perlengkapanDiri,
               ),
-              Flexible(
-                child: Text(
-                  score,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
+            ),
+            const Expanded(
+              child: SizedBox(),
+            ),
+          ],
         ),
       ],
     );
   }
+
+  Widget _buildScoreItem({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    final color = _getStatusColor(value);
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: const Color(0xFFEDEDED),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              icon,
+              size: 16,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 10,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openDetail(DataSantri santri) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DetailKelengkapanScreen(
+          noInduk: santri.noInduk,
+        ),
+      ),
+    );
+
+    if (result == true && mounted) {
+      setState(() {
+        _loadData();
+      });
+    }
+  }
+
+  Widget _buildLoadingState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                _primaryColor,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Memuat data kelengkapan...',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String error) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              size: 44,
+              color: Colors.grey[500],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Gagal memuat data',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              error,
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.grey[600],
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: () {
+                setState(() {
+                  _loadData();
+                });
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: _primaryColor,
+                side: const BorderSide(
+                  color: _primaryColor,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Coba Lagi',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.inventory_2_outlined,
+              size: 44,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Data Tidak Tersedia',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              'Belum ada data kelengkapan santri yang tersedia.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.grey[600],
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
+

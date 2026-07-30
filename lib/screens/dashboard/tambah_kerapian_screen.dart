@@ -294,7 +294,7 @@ class _TambahKerapianScreenState extends State<TambahKerapianScreen> {
             onEditingComplete: onEditingComplete,
             style: GoogleFonts.poppins(fontSize: 14),
             decoration: InputDecoration(
-              labelText: 'Pilih Santri',
+              labelText: 'Cari Santri',
               labelStyle: GoogleFonts.poppins(
                 color: Colors.grey[600],
                 fontSize: 14,
@@ -413,14 +413,27 @@ class _TambahKerapianScreenState extends State<TambahKerapianScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+      backgroundColor: const Color(0xFFF8F9FA),
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      titleSpacing: 0,
+      leading: IconButton(
+        icon: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          size: 20,
+          color: Colors.black87,
         ),
-        title: Text(isEdit ? 'Edit Kerapian' : 'Tambah Kerapian'),
-        backgroundColor:  Color(0xFF004e92),
-        foregroundColor: Colors.white,
+        onPressed: () => Navigator.of(context).pop(),
       ),
+      title: Text(
+        'Kerapian',
+        style: GoogleFonts.poppins(
+          fontSize: 19,
+          fontWeight: FontWeight.w600,
+          color: Colors.black87,
+        ),
+      ),
+    ),
       body: _loading
           ? Center(
               child: Column(
@@ -447,67 +460,11 @@ class _TambahKerapianScreenState extends State<TambahKerapianScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header Section
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.teal[50],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.cleaning_services,
-                              color: Colors.teal[600],
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  isEdit ? 'Edit Data Kerapian' : 'Tambah Data Kerapian',
-                                  style: GoogleFonts.poppins(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16,
-                                    color: Colors.grey[800],
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Lengkapi form di bawah ini',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
                     _buildSantriSearch(),
 
                     GestureDetector(
                       onTap: () async {
-                        FocusScope.of(context).unfocus(); // tutup keyboard
+                        FocusScope.of(context).unfocus();
                         final DateTime? pickedDate = await showDatePicker(
                           context: context,
                           initialDate: DateTime.now(),
@@ -515,7 +472,6 @@ class _TambahKerapianScreenState extends State<TambahKerapianScreen> {
                           lastDate: DateTime(2100),
                         );
                         if (pickedDate != null) {
-                          // Format tanggal ke string
                           final formattedDate = pickedDate.toIso8601String().split('T').first;
                           tanggalController.text = formattedDate;
                         }
@@ -530,7 +486,6 @@ class _TambahKerapianScreenState extends State<TambahKerapianScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
                     _buildSectionTitle('Penilaian Kerapian'),
                     const SizedBox(height: 8),
                     
@@ -557,7 +512,7 @@ class _TambahKerapianScreenState extends State<TambahKerapianScreen> {
                       child: ElevatedButton(
                         onPressed: _loading ? null : _submitForm,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF004e92),
+                          backgroundColor: Color(0xFF43A047),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -574,7 +529,7 @@ class _TambahKerapianScreenState extends State<TambahKerapianScreen> {
                                 ),
                               )
                             : Text(
-                                isEdit ? 'Simpan Perubahan' : 'Tambah Data',
+                                isEdit ? 'Simpan' : 'Tambah Data',
                                 style: GoogleFonts.poppins(
                                   fontWeight: FontWeight.w600,
                                   fontSize: 16,

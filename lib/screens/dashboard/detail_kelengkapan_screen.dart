@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'form_kelengkapan_screen.dart';
@@ -7,37 +8,203 @@ import '../../services/kelengkapan_service.dart';
 class DetailKelengkapanScreen extends StatefulWidget {
   final int noInduk;
 
-  const DetailKelengkapanScreen({Key? key, required this.noInduk}) : super(key: key);
+  const DetailKelengkapanScreen({
+    Key? key,
+    required this.noInduk,
+  }) : super(key: key);
 
   @override
-  State<DetailKelengkapanScreen> createState() => _DetailKelengkapanScreenState();
+  State<DetailKelengkapanScreen> createState() =>
+      _DetailKelengkapanScreenState();
 }
 
-class _DetailKelengkapanScreenState extends State<DetailKelengkapanScreen> {
+class _DetailKelengkapanScreenState
+    extends State<DetailKelengkapanScreen> {
   late Future<DetailKelengkapanResponse> _futureDetail;
+
+  static const Color primaryColor = Color(0xFF10B981);
+  static const Color backgroundColor = Color(0xFFF8FAFC);
+  static const Color textPrimary = Color(0xFF1F2937);
+  static const Color textSecondary = Color(0xFF6B7280);
 
   @override
   void initState() {
     super.initState();
-    _futureDetail = KelengkapanService.fetchDetailKelengkapan(widget.noInduk);
+    _loadData();
   }
 
-  Color getBackgroundColor(String value) {
+  void _loadData() {
+    _futureDetail =
+        KelengkapanService.fetchDetailKelengkapan(widget.noInduk);
+  }
+
+  Color getStatusColor(String value) {
     switch (value.toLowerCase()) {
       case 'lengkap & baik':
-        return Colors.green.shade400;
+        return const Color(0xFF10B981);
       case 'lengkap & kurang baik':
-        return Colors.orange.shade400;
+        return const Color(0xFFF59E0B);
       case 'tidak lengkap':
-        return const Color.fromARGB(255, 216, 46, 33);
+        return const Color(0xFFEF4444);
       default:
-        return Colors.grey.shade300;
+        return const Color(0xFF9CA3AF);
     }
   }
+
+  Future<void> _addKelengkapan(String namaSantri) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FormKelengkapanScreen(
+          noInduk: widget.noInduk,
+          namaSantri: namaSantri,
+        ),
+      ),
+    );
+
+    if (result == true && mounted) {
+      setState(() {
+        _loadData();
+      });
+    }
+  }
+
+  Future<void> _deleteKelengkapan(int id) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Hapus Catatan?',
+            style: GoogleFonts.poppins(
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
+              color: textPrimary,
+            ),
+          ),
+          content: Text(
+            'Data kelengkapan ini akan dihapus dan tidak dapat dikembalikan.',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: textSecondary,
+              height: 1.5,
+            ),
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(
+                'Batal',
+                style: GoogleFonts.poppins(
+                  color: textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 10,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text(
+                'Hapus',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm != true || !mounted) return;
+
+    final success =
+        await KelengkapanService.deleteKelengkapan(id);
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                Icons.check_circle,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Data berhasil dihapus',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: primaryColor,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+
+      setState(() {
+        _loadData();
+      });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                Icons.error_outline,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Gagal menghapus data',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -46,7 +213,11 @@ class _DetailKelengkapanScreenState extends State<DetailKelengkapanScreen> {
         title: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
+              icon: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: Colors.black87,
+                size: 20,
+              ),
               onPressed: () => Navigator.of(context).pop(true),
               padding: const EdgeInsets.only(left: 8, right: 4),
               constraints: const BoxConstraints(),
@@ -68,443 +239,394 @@ class _DetailKelengkapanScreenState extends State<DetailKelengkapanScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF6366F1)),
+                strokeWidth: 2.5,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  primaryColor,
+                ),
               ),
             );
           }
 
           if (snapshot.hasError) {
-            return Center(
-              child: Text('Gagal memuat data: ${snapshot.error}'),
-            );
+            return _buildErrorState(snapshot.error);
+          }
+
+          if (!snapshot.hasData) {
+            return _buildErrorState(null);
           }
 
           final data = snapshot.data!;
           final kelengkapanList = data.data.dataKelengkapan;
           final namaSantri = data.data.namaSantri;
 
-          return SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  margin: const EdgeInsets.all(16),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF6366F1).withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+          return RefreshIndicator(
+            color: primaryColor,
+            onRefresh: () async {
+              setState(() {
+                _loadData();
+              });
+              await _futureDetail;
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildStudentCard(
+                    namaSantri,
+                    kelengkapanList.length,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(Icons.person_rounded, color: Colors.white, size: 24),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Nama Santri',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 12,
-                                    color: Colors.white.withOpacity(0.8),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  namaSantri,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.assignment_rounded, size: 16, color: Colors.white),
-                            const SizedBox(width: 8),
-                            Text(
-                              '${kelengkapanList.length} Catatan Kelengkapan',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: kelengkapanList.isEmpty
-                      ? _buildEmptyState()
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Riwayat Catatan Kelengkapan',
-                              style: GoogleFonts.poppins(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: const Color(0xFF1F2937),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            ...kelengkapanList.map((item) => _buildKelengkapanCard(item)).toList(),
-                            const SizedBox(height: 80), // Tambahan agar tidak ketutup FAB
-                          ],
-                        ),
-                ),
-              ],
+                  const SizedBox(height: 24),
+                  if (kelengkapanList.isEmpty)
+                    _buildEmptyState()
+                  else
+                    _buildHistorySection(kelengkapanList),
+                ],
+              ),
             ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF667EEA),
-        child: const Icon(Icons.add, color: Colors.white),
         onPressed: () async {
-          final snapshot = await _futureDetail;
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => FormKelengkapanScreen(
-                noInduk: widget.noInduk,
-                namaSantri: snapshot.data.namaSantri,
+          try {
+            final snapshot = await _futureDetail;
+
+            if (!mounted) return;
+
+            await _addKelengkapan(snapshot.data.namaSantri);
+          } catch (_) {
+            if (!mounted) return;
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Gagal mendapatkan data santri',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                backgroundColor: const Color(0xFFEF4444),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-            ),
-          );
-          if (result == true) {
-            setState(() {
-              _futureDetail = KelengkapanService.fetchDetailKelengkapan(widget.noInduk);
-            });
+            );
           }
         },
+        backgroundColor: primaryColor,
+        elevation: 2,
+        child: const Icon(
+          Icons.add_rounded,
+          color: Colors.white,
+        ),
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildStudentCard(String namaSantri, int totalCatatan) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(40),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFE5E7EB),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.08),
-            blurRadius: 20,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(20),
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              shape: BoxShape.circle,
+              color: primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              Icons.assignment_outlined,
-              size: 48,
-              color: Colors.grey.shade400,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Belum Ada Catatan',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF374151),
+            child: const Icon(
+              Icons.person_rounded,
+              color: primaryColor,
+              size: 25,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Catatan Kelengkapan santri akan muncul di sini ketika sudah tersedia',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.grey.shade600,
-              height: 1.5,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Nama Santri',
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    color: textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  namaSantri,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    color: textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.assignment_outlined,
+                      size: 14,
+                      color: textSecondary,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      '$totalCatatan catatan',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            textAlign: TextAlign.center,
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildHistorySection(List<ItemKelengkapan> items) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 20,
+              decoration: BoxDecoration(
+                color: primaryColor,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Riwayat Kelengkapan',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: textPrimary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        ...items.map(
+          (item) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildKelengkapanCard(item),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildKelengkapanCard(ItemKelengkapan item) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFE5E7EB),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.black.withOpacity(0.035),
             blurRadius: 10,
-            offset: const Offset(0, 4),
+            offset: const Offset(0, 3),
           ),
         ],
-        border: Border.all(color: Colors.grey.withOpacity(0.1)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Flexible(
-                  child: Text(
-                    'Catatan Kelengkapan',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D3748),
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                Row(
-                  children: [
-                    Text(
-                      item.tanggal,
-                      style: const TextStyle(
-                        color: Color(0xFF4A5568),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    GestureDetector(
-                      onTap: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder: (ctx) => AlertDialog(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            title: Row(
-                              children: [
-                                const Icon(Icons.warning_amber_rounded, color: Colors.red),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Konfirmasi Hapus',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            content: Text(
-                              'Apakah kamu yakin ingin menghapus data kelengkapan ini?',
-                              style: GoogleFonts.poppins(fontSize: 14),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(ctx).pop(false),
-                                child: Text(
-                                  'Batal',
-                                  style: GoogleFonts.poppins(color: Colors.grey.shade600),
-                                ),
-                              ),
-                              ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red.shade600,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                icon: const Icon(Icons.delete_outline, size: 18),
-                                label: Text(
-                                  'Hapus',
-                                  style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                                ),
-                                onPressed: () => Navigator.of(ctx).pop(true),
-                              ),
-                            ],
-                          ),
-                        );
-
-                        if (confirm == true) {
-                          final success = await KelengkapanService.deleteKelengkapan(item.id);
-                          if (success) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                backgroundColor: Colors.green.shade600,
-                                content: Text(
-                                  'Data berhasil dihapus',
-                                  style: GoogleFonts.poppins(color: Colors.white),
-                                ),
-                              ),
-                            );
-                            setState(() {
-                              _futureDetail = KelengkapanService.fetchDetailKelengkapan(widget.noInduk);
-                            });
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                backgroundColor: Colors.red.shade600,
-                                content: Text(
-                                  'Gagal menghapus data',
-                                  style: GoogleFonts.poppins(color: Colors.white),
-                                ),
-                              ),
-                            );
-                          }
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.red.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(
-                          Icons.delete_outline,
-                          color: Colors.red,
-                          size: 20,
-                        ),
-                      ),
-                    )
-
-
-                  ],
+                child: const Icon(
+                  Icons.inventory_2_outlined,
+                  size: 17,
+                  color: primaryColor,
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            IntrinsicHeight(
-              child: Column(
-                children: [
-                  _buildScoreRow(
-                    Icons.shower,
-                    "Mandi",
-                    item.perlengkapanMandi,
-                    getBackgroundColor(item.perlengkapanMandi),
-                    item.catatanMandi,
-                  ),
-                  const SizedBox(height: 8),
-                  _buildScoreRow(
-                    Icons.school,
-                    "Alat Sekolah",
-                    item.peralatanSekolah,
-                    getBackgroundColor(item.peralatanSekolah),
-                    item.catatanSekolah,
-                  ),
-                  const SizedBox(height: 8),
-                  _buildScoreRow(
-                    Icons.checkroom,
-                    "Perlengkapan Diri",
-                    item.perlengkapanDiri,
-                    getBackgroundColor(item.perlengkapanDiri),
-                    item.catatanDiri,
-                  ),
-                ],
               ),
-            ),
-          ],
-        ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Pemeriksaan Kelengkapan',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: textPrimary,
+                  ),
+                ),
+              ),
+              Text(
+                item.tanggal,
+                style: GoogleFonts.poppins(
+                  fontSize: 11,
+                  color: textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => _deleteKelengkapan(item.id),
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF2F2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.delete_outline_rounded,
+                    size: 17,
+                    color: Color(0xFFEF4444),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Divider(
+            height: 1,
+            color: Color(0xFFF1F5F9),
+          ),
+          const SizedBox(height: 14),
+          _buildScoreRow(
+            Icons.shower_outlined,
+            'Perlengkapan Mandi',
+            item.perlengkapanMandi,
+            item.catatanMandi,
+          ),
+          const SizedBox(height: 12),
+          _buildScoreRow(
+            Icons.school_outlined,
+            'Peralatan Sekolah',
+            item.peralatanSekolah,
+            item.catatanSekolah,
+          ),
+          const SizedBox(height: 12),
+          _buildScoreRow(
+            Icons.checkroom_outlined,
+            'Perlengkapan Diri',
+            item.perlengkapanDiri,
+            item.catatanDiri,
+          ),
+        ],
       ),
     );
   }
 
+  Widget _buildScoreRow(
+    IconData icon,
+    String label,
+    String score,
+    String catatan,
+  ) {
+    final color = getStatusColor(score);
 
-  Widget _buildScoreRow(IconData icon, String label, String score, Color color, String catatan) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: const EdgeInsets.all(6),
+          width: 34,
+          height: 34,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(9),
           ),
-          child: Icon(icon, size: 16, color: color),
+          child: Icon(
+            icon,
+            size: 17,
+            color: const Color(0xFF64748B),
+          ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: Color(0xFF4A5568),
+                style: GoogleFonts.poppins(
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
+                  color: textSecondary,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
-              Text(
-                score,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              if (catatan.trim().isNotEmpty && catatan != "-")
-                Padding(
-                  padding: const EdgeInsets.only(top: 2),
-                  child: Text(
-                    catatan,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey,
+              const SizedBox(height: 3),
+              Wrap(
+                spacing: 6,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    decoration: BoxDecoration(
+                      color: color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      score,
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: color,
+                      ),
+                    ),
                   ),
-                ),
+                  if (catatan.trim().isNotEmpty && catatan != '-')
+                    Text(
+                      catatan,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        fontSize: 10,
+                        color: textSecondary,
+                        height: 1.3,
+                      ),
+                    ),
+                ],
+              ),
             ],
           ),
         ),
@@ -512,6 +634,162 @@ class _DetailKelengkapanScreenState extends State<DetailKelengkapanScreen> {
     );
   }
 
-  
+  Widget _buildEmptyState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+        horizontal: 24,
+        vertical: 40,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFE5E7EB),
+        ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.08),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.inventory_2_outlined,
+              size: 38,
+              color: primaryColor,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            'Belum Ada Catatan',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Belum ada pemeriksaan kelengkapan untuk santri ini.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: textSecondary,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 18),
+          OutlinedButton.icon(
+            onPressed: () async {
+              try {
+                final snapshot = await _futureDetail;
 
+                if (!mounted) return;
+
+                await _addKelengkapan(snapshot.data.namaSantri);
+              } catch (_) {}
+            },
+            style: OutlinedButton.styleFrom(
+              foregroundColor: primaryColor,
+              side: const BorderSide(
+                color: primaryColor,
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 10,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            icon: const Icon(
+              Icons.add_rounded,
+              size: 18,
+            ),
+            label: Text(
+              'Tambah Catatan',
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(Object? error) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEF2F2),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.error_outline_rounded,
+                size: 40,
+                color: Color(0xFFEF4444),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Gagal Memuat Data',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: textPrimary,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Terjadi kesalahan saat mengambil data kelengkapan.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: textSecondary,
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 18),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _loadData();
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 10,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: Text(
+                'Coba Lagi',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

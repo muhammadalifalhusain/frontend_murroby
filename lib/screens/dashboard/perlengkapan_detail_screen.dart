@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/perlengkapan_model.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class DetailPerlengkapanScreen extends StatelessWidget {
   final PerlengkapanModel perlengkapan;
@@ -24,9 +25,28 @@ class DetailPerlengkapanScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Detail Perlengkapan'),
-        backgroundColor: const Color(0xFF5B913B),
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false, 
+        titleSpacing: 0, 
+        title: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
+              onPressed: () => Navigator.of(context).pop(),
+              padding: const EdgeInsets.only(left: 8, right: 4), 
+              constraints: const BoxConstraints(), 
+            ),
+            Text(
+              'Kerapian',
+              style: GoogleFonts.poppins(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

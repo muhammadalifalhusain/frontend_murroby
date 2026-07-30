@@ -8,6 +8,7 @@ import '../screens/dashboard/pemeriksaan_screen.dart';
 import '../screens/dashboard/perilaku_screen.dart';
 // import '../screens/dashboard/saku_screen.dart';
 import '../screens/dashboard/perlengkapan_screen.dart';
+import '../screens/dashboard/kerapian_screen.dart';
 
 class MenuIkonWidget extends StatelessWidget {
   const MenuIkonWidget({super.key});
@@ -130,6 +131,20 @@ class MenuIkonWidget extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (_) => const PerlengkapanScreen(),
+                    ),
+                  );
+                },
+              ),
+              _buildMenu(
+                context,
+                icon: Icons.checkroom_rounded,
+                title: 'Kerapian',
+                color: const Color(0xFF00ACC1),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const KerapianScreen(),
                     ),
                   );
                 },

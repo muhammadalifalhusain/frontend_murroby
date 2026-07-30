@@ -9,7 +9,7 @@ class PemeriksaanScreen extends StatefulWidget {
   const PemeriksaanScreen({Key? key}) : super(key: key);
 
   @override
-  _PemeriksaanScreenState createState() => _PemeriksaanScreenState();
+  State<PemeriksaanScreen> createState() => _PemeriksaanScreenState();
 }
 
 class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
@@ -19,64 +19,78 @@ class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
   void initState() {
     super.initState();
     _pemeriksaanFuture = PemeriksaanService.getPemeriksaanData();
+  }
 
+  Future<void> _refreshData() async {
+    setState(() {
+      _pemeriksaanFuture = PemeriksaanService.getPemeriksaanData();
+    });
+
+    await _pemeriksaanFuture;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 230, 229, 229),
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      automaticallyImplyLeading: false, 
-      titleSpacing: 0, 
-      title: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black87),
-            onPressed: () => Navigator.of(context).pop(),
-            padding: const EdgeInsets.only(left: 8, right: 4), 
-            constraints: const BoxConstraints(), 
+        backgroundColor: const Color(0xFFF8F9FA),
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: Colors.black87,
           ),
-          Text(
-            'Pemeriksaan',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          'Pemeriksaan',
+          style: GoogleFonts.poppins(
+            fontSize: 19,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
           ),
-        ],
+        ),
       ),
-    ),
       body: FutureBuilder<PemeriksaanResponse>(
         future: _pemeriksaanFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667EEA)),
-              ),
-            );
-          } else if (snapshot.hasError) {
+            return _buildLoadingWidget();
+          }
+
+          if (snapshot.hasError) {
             return _buildErrorWidget(snapshot.error.toString());
-          } else if (!snapshot.hasData) {
+          }
+
+          if (!snapshot.hasData) {
             return _buildEmptyDataWidget();
           }
 
-          final data = snapshot.data!;
-          final santriList = data.data.dataSantri;
+          final santriList = snapshot.data!.data.dataSantri;
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSantriListHeader(santriList.length),
-                const SizedBox(height: 16),
-                _buildSantriList(santriList),
-              ],
+          if (santriList.isEmpty) {
+            return _buildEmptyDataWidget();
+          }
+
+          return RefreshIndicator(
+            color: const Color(0xFF43A047),
+            onRefresh: _refreshData,
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(
+                16,
+                8,
+                16,
+                100,
+              ),
+              itemCount: santriList.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              itemBuilder: (context, index) {
+                return _buildSantriItem(santriList[index]);
+              },
             ),
           );
         },
@@ -84,205 +98,122 @@ class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
     );
   }
 
-  Widget _buildSantriListHeader(int totalSantri) {
+  Widget _buildSantriItem(DataSantri santri) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Daftar Santri',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2D3748),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'Total: $totalSantri',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSantriList(List<DataSantri> santriList) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: santriList.length,
-      itemBuilder: (context, index) {
-        final santri = santriList[index];
-        return _buildSantriCard(santri);
-      },
-    );
-  }
-
-  Widget _buildSantriCard(DataSantri santri) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+        border: Border.all(
+          color: const Color(0xFFE7E7E7),
+        ),
       ),
       child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        data: Theme.of(context).copyWith(
+          dividerColor: Colors.transparent,
+        ),
         child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          childrenPadding: const EdgeInsets.all(16),
+          tilePadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 4,
+          ),
+          childrenPadding: const EdgeInsets.fromLTRB(
+            16,
+            0,
+            16,
+            16,
+          ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          collapsedShape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          leading: Icon(
+            Icons.person_outline_rounded,
+            color: Colors.grey[600],
+            size: 25,
           ),
           title: Text(
             santri.nama,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              color: Color(0xFF2D3748),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
             ),
           ),
-          subtitle: Container(
-            margin: const EdgeInsets.only(top: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
-              ),
-              borderRadius: BorderRadius.circular(12),
-            ),
+          subtitle: Padding(
+            padding: const EdgeInsets.only(top: 3),
             child: Text(
-              'NIS : ${santri.noInduk}',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+              'NIS: ${santri.noInduk}',
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                color: Colors.grey[600],
               ),
-            ),
-          ),
-          leading: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF667EEA).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.person_rounded,
-              color: Color(0xFF667EEA),
-              size: 24,
             ),
           ),
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.withOpacity(0.1)),
-              ),
-              child: Column(
-                children: [
-                  _buildInfoRow(
-                    Icons.calendar_today_rounded,
-                    'Tanggal Pemeriksaan',
-                    santri.tanggalPemeriksaanFormatted ?? 'Belum diperiksa',
-                  ),
-                  const Divider(color: Color(0xFFE2E8F0)),
-                  _buildInfoRow(
-                    Icons.height_rounded,
-                    'Tinggi Badan',
-                    '${santri.tinggiBadan?.toString() ?? '-'} cm',
-                  ),
-                  const Divider(color: Color(0xFFE2E8F0)),
-                  _buildInfoRow(
-                    Icons.monitor_weight_rounded,
-                    'Berat Badan',
-                    '${santri.beratBadan?.toString() ?? '-'} kg',
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color.fromARGB(255, 19, 19, 19), Color.fromARGB(255, 4, 4, 4)],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF667EEA).withOpacity(0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => DetailPemeriksaanScreen(
-                              noInduk: santri.noInduk,
-                              namaSantri: santri.nama,
-                            ),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                      icon: const Icon(
-                        Icons.visibility_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                      label: const Text(
-                        'Lihat Detail Pemeriksaan',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
+            const Divider(
+              height: 1,
+              color: Color(0xFFEDEDED),
+            ),
+            const SizedBox(height: 12),
+            _buildInfoRow(
+              Icons.calendar_today_outlined,
+              'Tanggal Pemeriksaan',
+              santri.tanggalPemeriksaanFormatted ?? 'Belum diperiksa',
+            ),
+            const SizedBox(height: 10),
+            _buildInfoRow(
+              Icons.height_rounded,
+              'Tinggi Badan',
+              '${santri.tinggiBadan?.toString() ?? '-'} cm',
+            ),
+            const SizedBox(height: 10),
+            _buildInfoRow(
+              Icons.monitor_weight_outlined,
+              'Berat Badan',
+              '${santri.beratBadan?.toString() ?? '-'} kg',
+            ),
+            const SizedBox(height: 14),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DetailPemeriksaanScreen(
+                        noInduk: santri.noInduk,
+                        namaSantri: santri.nama,
                       ),
                     ),
+                  );
+                },
+                icon: const Icon(
+                  Icons.visibility_outlined,
+                  size: 18,
+                ),
+                label: Text(
+                  'Lihat Detail Pemeriksaan',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
                   ),
-                ],
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF43A047),
+                  side: const BorderSide(
+                    color: Color(0xFF43A047),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 10,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
               ),
             ),
           ],
@@ -291,36 +222,65 @@ class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF667EEA).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+  Widget _buildInfoRow(
+    IconData icon,
+    String label,
+    String value,
+  ) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 17,
+          color: Colors.grey[500],
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: Colors.grey[600],
             ),
-            child: Icon(icon, size: 16, color: const Color(0xFF667EEA)),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF2D3748),
-                fontSize: 14,
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoadingWidget() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Color(0xFF43A047),
               ),
             ),
           ),
+          const SizedBox(height: 12),
           Text(
-            value,
-            style: const TextStyle(
-              color: Color(0xFF4A5568),
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+            'Memuat data...',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: Colors.grey[600],
             ),
           ),
         ],
@@ -331,36 +291,52 @@ class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
   Widget _buildErrorWidget(String error) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(32),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.error_outline_rounded,
-                size: 48,
-                color: Colors.red,
+            Icon(
+              Icons.error_outline_rounded,
+              size: 44,
+              color: Colors.grey[500],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Gagal memuat data',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Terjadi Kesalahan',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2D3748),
-              ),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               error,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFF4A5568)),
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: _refreshData,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF43A047),
+                side: const BorderSide(
+                  color: Color(0xFF43A047),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Coba Lagi',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
           ],
         ),
@@ -370,36 +346,37 @@ class _PemeriksaanScreenState extends State<PemeriksaanScreen> {
 
   Widget _buildEmptyDataWidget() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFF667EEA).withOpacity(0.1),
-              shape: BoxShape.circle,
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.assignment_outlined,
+              size: 46,
+              color: Colors.grey[400],
             ),
-            child: const Icon(
-              Icons.info_outline_rounded,
-              size: 48,
-              color: Color(0xFF667EEA),
+            const SizedBox(height: 14),
+            Text(
+              'Tidak ada data pemeriksaan',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Tidak ada data tersedia',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF2D3748),
+            const SizedBox(height: 5),
+            Text(
+              'Belum terdapat data santri yang dapat ditampilkan.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Silahkan refresh atau cek koneksi internet Anda',
-            style: TextStyle(color: Color(0xFF4A5568)),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
