@@ -15,7 +15,10 @@ class MenuIkonWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 18),
+      padding: const EdgeInsets.only(
+        top: 18,
+        bottom: 8,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -33,7 +36,7 @@ class MenuIkonWidget extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 3,
-            childAspectRatio: .82,
+            childAspectRatio: 1.0,
             crossAxisSpacing: 10,
             children: [
               // _buildMenu(
